@@ -9,6 +9,24 @@ description: Use when building App Store or Play Store screenshot pages, generat
 
 Build a Next.js page that renders App Store / Play Store screenshots as **advertisements** (not UI showcases) and exports them via `html-to-image` at required resolutions. Screenshots are the single most important conversion asset on the stores.
 
+## MANDATORY: All Platforms & All Device Sizes
+
+**Every screenshot generator MUST produce ALL of the following — no exceptions:**
+
+| Platform | Device | Export Size | Mockup |
+|----------|--------|-------------|--------|
+| iOS | Phone 6.9" | 1320×2868 | `mockup.png` (iPhone) |
+| iOS | Phone 6.5" | 1284×2778 | `mockup.png` (iPhone) |
+| iOS | Phone 6.3" | 1206×2622 | `mockup.png` (iPhone) |
+| iOS | Phone 6.1" | 1125×2436 | `mockup.png` (iPhone) |
+| Android | Phone | 1080×1920 | `mockup-android.png` |
+| Android | 7" Tablet | 1200×1920 | `mockup-7inch.png` |
+| Android | 10" Tablet | 1600×2560 | `mockup-10inch.png` |
+
+**This is NOT optional.** Do NOT skip Android tablets. Do NOT skip smaller iOS sizes. Do NOT only generate "the main size." ALL 7 size variants × ALL locales = total export count.
+
+Each slide component must render correctly at ALL sizes above. Use the appropriate mockup per platform/device. Design responsive layouts that adapt to different aspect ratios (iOS ~9:19.5 vs Android phone 9:16 vs tablets).
+
 ## Core Principle
 
 **Screenshots are advertisements, not documentation.** Every screenshot sells one idea. If you're showing UI, you're doing it wrong — you're selling a *feeling*, an *outcome*, or killing a *pain point*.
@@ -315,16 +333,33 @@ Get all headlines approved **in every target language** before building layouts.
 
 ```
 page.tsx
-├── Constants (W, H, SIZES, design tokens from user's brand)
+├── Constants (W, H per platform/device, SIZES, design tokens)
 ├── Locale types & translations (LOCALES, LocaleTexts, TRANSLATIONS)
-├── Phone component (mockup with screen overlay)
+├── Phone component (mockup with screen overlay — accepts mockup type)
 ├── Caption component (label + headline — reads from current locale)
 ├── Decorative components (blobs, glows, shapes — based on style direction)
-├── Screenshot1..N components (one per slide, receives locale prop)
+├── Screenshot1..N components (receives locale + platform/device props)
 ├── SCREENSHOTS array (registry)
 ├── ScreenshotPreview (ResizeObserver scaling + hover export)
 └── ScreenshotsPage (grid + toolbar + locale selector + export logic)
 ```
+
+**CRITICAL:** Each Screenshot component must accept platform/device and render with:
+- The correct canvas dimensions (W × H) for that platform/device
+- The correct mockup image (iPhone vs Android vs 7" vs 10")
+- Responsive positioning so typography and mockup don't overlap at any size
+
+```tsx
+// Each screenshot component signature
+function ScreenshotHero({ locale, W, H, mockupType }: {
+  locale: Locale;
+  W: number;
+  H: number;
+  mockupType: "iphone" | "android" | "7inch" | "10inch";
+}) { ... }
+```
+
+The page must render and export every slide at ALL 7 size variants (see MANDATORY table above). Not just the "design size" — every export size.
 
 ### i18n Architecture
 
@@ -663,15 +698,16 @@ async function exportLocale(locale: Locale, platform: Platform, deviceType: Devi
   }
 }
 
-// Export one language — all platforms & device types
+// Export one language — ALL 4 platform/device combos (MANDATORY — never skip any)
 async function exportLocaleAll(locale: Locale) {
-  const allCombos: [Platform, DeviceType][] = [
-    ['ios', 'phone'],
-    ['android', 'phone'],
-    ['android', '7inch'],
-    ['android', '10inch'],
+  // ALL 4 combos must be here. Do NOT remove any.
+  const ALL_COMBOS: [Platform, DeviceType][] = [
+    ['ios', 'phone'],       // 4 iOS sizes (6.9", 6.5", 6.3", 6.1")
+    ['android', 'phone'],   // 1 Android phone size
+    ['android', '7inch'],   // 1 Android 7" tablet size — DO NOT SKIP
+    ['android', '10inch'],  // 1 Android 10" tablet size — DO NOT SKIP
   ];
-  for (const [platform, deviceType] of allCombos) {
+  for (const [platform, deviceType] of ALL_COMBOS) {
     await exportLocale(locale, platform, deviceType);
   }
 }
@@ -750,6 +786,9 @@ export/
 | Forgot to re-render before export | Wait 500ms after setLocale() before capturing — React needs time to re-render |
 | All languages in one folder | Organize by `{locale}/{device}/` — stores require separate uploads per language |
 | English line breaks applied to Korean | CJK characters are wider — fewer words per line, adjust `<br />` positions |
+| Only generated iOS phone sizes | ALL 7 sizes are mandatory (iOS 4 + Android 3). See MANDATORY table at top. |
+| Skipped Android 7" or 10" tablet | Tablets are required. Use `mockup-7inch.png` and `mockup-10inch.png` with correct measurements. |
+| Same layout for all aspect ratios | iOS phone (~9:19.5) vs Android phone (9:16) vs tablets — each needs responsive positioning. |
 
 ## Step 7: Review & Iterate
 
