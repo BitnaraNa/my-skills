@@ -795,9 +795,18 @@ Run the dev server and verify ALL interactive features work:
 
 Review EACH slide at **every target size**. iOS and Android have different aspect ratios and dimensions — typography and mockups that look fine at one size may overlap or clip at another.
 
-**Review procedure:** Use the preview size selector to switch through ALL sizes for EACH slide:
-- iOS: 6.9" (1320×2868), 6.5" (1284×2778), 6.3" (1206×2622), 6.1" (1125×2436)
-- Android: Phone (1080×1920), 7" (1200×1920), 10" (1600×2560)
+**Review procedure — screenshot-based verification:**
+
+Do NOT rely on browser preview alone. Actually export PNGs and inspect them as images:
+
+1. For each locale, export all slides at all sizes (use "Export current language")
+2. Use the **Read tool** to open each exported PNG and visually inspect it
+3. Check every slide × every size combination systematically:
+   - iOS: 6.9" (1320×2868), 6.5" (1284×2778), 6.3" (1206×2622), 6.1" (1125×2436)
+   - Android: Phone (1080×1920), 7" (1200×1920), 10" (1600×2560)
+4. Compare the same slide across sizes side by side — overlap issues are easiest to spot this way
+
+**Why screenshot-based:** Browser preview scales everything down, hiding overlap and clipping issues that only appear at actual export resolution. The exported PNG is the final deliverable — review THAT, not the preview.
 
 For every slide × every size, check:
 
@@ -845,7 +854,7 @@ Switch through EACH language and verify:
 
 ### Round 4: Export Verification
 
-Actually export and inspect the output files:
+Export all and inspect the output files **by opening each PNG with the Read tool**:
 
 | Check | Criteria |
 |-------|----------|
@@ -859,6 +868,7 @@ Actually export and inspect the output files:
 | **iOS sizes** | 4 size variants per slide (6.9", 6.5", 6.3", 6.1") |
 | **Android sizes** | Phone (1080×1920), 7" (1200×1920), 10" (1600×2560) per slide |
 | **All locales present** | Every locale has complete export — no missing language folders |
+| **Visual spot-check** | Open at least 1 exported PNG per size with Read tool — verify no overlap, clipping, or rendering issues that Round 2 may have missed |
 
 **If ANY check fails, fix the issue and re-run Round 4.**
 
