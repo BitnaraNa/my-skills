@@ -51,9 +51,11 @@ Using the Project Brief, dispatch a second round of **perspective agents** to pr
 - Considers the "first 3 screenshots" rule — most users never scroll past #3
 
 **Copywriter Agent:**
-- Writes 2-3 headline options per proposed slide using the three approaches (paint a moment / state an outcome / kill a pain)
-- Applies the Iron Rules: one idea per headline, 3-5 words per line, readable at thumbnail size
+- Writes 2-3 headline options per proposed slide **per target language** using the three approaches (paint a moment / state an outcome / kill a pain)
+- Applies the Iron Rules: one idea per headline, readable at thumbnail size
+- Line length per language: EN 3-5 words, KO 2-4 어절, JA 5-10 chars, ZH 4-8 chars
 - Ensures no two slides use "and" or compound clauses
+- Copy is **adapted, not translated** — each language should feel native
 
 **UX/Visual Director Agent:**
 - Proposes layout variety per slide (centered phone, two-phone, phone + floating elements, no-phone)
@@ -76,14 +78,27 @@ Present the Screenshot Plan as a clear table:
 | ...                                                                                        |
 ```
 
+Present the Screenshot Plan with headlines shown **per language**:
+
+```
+| # | Concept         | EN Headlines (pick one)           | KO Headlines (pick one)           | Layout     | Screen to Capture   |
+|---|-----------------|-----------------------------------|-----------------------------------|------------|---------------------|
+| 1 | Hero            | A) "..." B) "..." C) "..."        | A) "..." B) "..." C) "..."        | Centered   | Home screen         |
+| 2 | Differentiator  | A) "..." B) "..." C) "..."        | A) "..." B) "..." C) "..."        | Two-phone  | Feature X vs Y      |
+| ...                                                                                                                                |
+```
+
 Then ask the user:
 
-1. **Platform** — "Which store? iOS App Store, Google Play Store, or both?"
-2. **Device types** — "Which device types? (Phone / 7-inch tablet / 10-inch tablet)"
-3. **Review the plan** — "Here's what I found and propose. Adjust the order, swap headlines, add/remove slides, or change anything."
-4. **App screenshots** — "I'll need actual device captures for each slide. Can you provide PNGs, or should I note which screens to capture?"
-5. **Style direction** — "Based on your brand, I suggest [style]. Want to adjust? (warm/organic, dark/moody, clean/minimal, bold/colorful, gradient-heavy, flat)"
-6. **Any overrides** — "Anything else you want to change or add?"
+1. **Languages** — "Which languages do you need? (e.g., English + Korean, or English + Korean + Japanese, etc.) Each language generates a separate set of screenshots."
+2. **Platform** — "Which store? iOS App Store, Google Play Store, or both?"
+3. **Device types** — "Which device types? (Phone / 7-inch tablet / 10-inch tablet)"
+4. **Review the plan** — "Here's what I found and propose. Adjust the order, swap headlines, add/remove slides, or change anything."
+5. **App screenshots** — "I'll need actual device captures for each slide. Can you provide PNGs per language (if localized UI), or should I note which screens to capture?"
+6. **Style direction** — "Based on your brand, I suggest [style]. Want to adjust? (warm/organic, dark/moody, clean/minimal, bold/colorful, gradient-heavy, flat)"
+7. **Any overrides** — "Anything else you want to change or add?"
+
+**Language-specific app screenshots:** If the app has localized UI, the user should provide separate screenshots per language (e.g., `screenshots/en/home.png`, `screenshots/ko/home.png`). If the UI is language-neutral or only in one language, the same screenshots can be shared across all locales.
 
 **Do NOT proceed until the user approves or adjusts the plan.**
 
@@ -143,28 +158,68 @@ project/
 │   ├── mockup-7inch.png        # 7-inch tablet frame (user-provided or generated)
 │   ├── mockup-10inch.png       # 10-inch tablet frame (user-provided or generated)
 │   ├── app-icon.png            # User's app icon
-│   └── screenshots/            # User's app screenshots
-│       ├── home.png
-│       ├── feature-1.png
-│       └── ...
+│   └── screenshots/            # User's app screenshots (per locale if localized UI)
+│       ├── en/
+│       │   ├── home.png
+│       │   ├── feature-1.png
+│       │   └── ...
+│       ├── ko/
+│       │   ├── home.png
+│       │   ├── feature-1.png
+│       │   └── ...
+│       └── shared/             # Language-neutral screenshots (optional)
+│           └── ...
 ├── src/app/
-│   ├── layout.tsx              # Font setup
+│   ├── layout.tsx              # Font setup (multi-language fonts)
 │   └── page.tsx                # The screenshot generator (single file)
 └── package.json
 ```
 
-**The entire generator is a single `page.tsx` file.** No routing, no extra layouts, no API routes.
+**The entire generator is a single `page.tsx` file.** No routing, no extra layouts, no API routes. i18n is handled inline via a `TRANSLATIONS` record and a `locale` state variable.
 
-### Font Setup
+### Font Setup (Multi-Language)
+
+When supporting multiple languages, load fonts for each script:
 
 ```tsx
 // src/app/layout.tsx
-import { YourFont } from "next/font/google"; // Use whatever font the user specified
-const font = YourFont({ subsets: ["latin"] });
+import { Inter, Noto_Sans_KR } from "next/font/google";
+
+// Latin script (English, etc.)
+const inter = Inter({ subsets: ["latin"], variable: "--font-latin" });
+
+// Korean script
+const notoKR = Noto_Sans_KR({
+  subsets: ["latin"],  // next/font requires at least "latin"
+  weight: ["400", "600", "700"],
+  variable: "--font-ko",
+});
+
+// Add more as needed:
+// const notoJP = Noto_Sans_JP({ subsets: ["latin"], weight: [...], variable: "--font-ja" });
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <html><body className={font.className}>{children}</body></html>;
+  return (
+    <html>
+      <body className={`${inter.variable} ${notoKR.variable}`}>
+        {children}
+      </body>
+    </html>
+  );
 }
+```
+
+In `page.tsx`, use the appropriate CSS variable per locale:
+
+```typescript
+const LOCALE_FONTS: Record<Locale, string> = {
+  en: "var(--font-latin), sans-serif",
+  ko: "var(--font-ko), var(--font-latin), sans-serif",
+  // ja: "var(--font-ja), var(--font-latin), sans-serif",
+};
+
+// Apply on the offscreen export container and slide wrapper:
+// style={{ fontFamily: LOCALE_FONTS[locale] }}
 ```
 
 ## Step 3: Plan the Slides
@@ -187,9 +242,9 @@ Adapt this framework to the user's requested slide count. Not all slots are requ
 - Vary layouts across slides — never repeat the same template structure.
 - Include 1-2 contrast slides (inverted bg) for visual rhythm.
 
-## Step 4: Write Copy FIRST
+## Step 4: Write Copy FIRST (All Languages)
 
-Get all headlines approved before building layouts. Bad copy ruins good design.
+Get all headlines approved **in every target language** before building layouts. Bad copy ruins good design.
 
 ### The Iron Rules
 
@@ -198,13 +253,24 @@ Get all headlines approved before building layouts. Bad copy ruins good design.
 3. **3-5 words per line.** Must be readable at thumbnail size in the store.
 4. **Line breaks are intentional.** Control where lines break with `<br />`.
 
+### Multi-Language Copy Rules
+
+- **Do NOT just translate.** Each language should have copy that feels native — adapted, not translated. Korean copy should feel natural in Korean, not like translated English.
+- **Character count varies by language.** CJK (Korean, Japanese, Chinese) characters are wider — fewer characters per line. Adjust line breaks accordingly.
+  - English: 3-5 words per line
+  - Korean: 2-4 어절 per line (shorter due to wider characters)
+  - Japanese: 5-10 characters per line
+  - Chinese: 4-8 characters per line
+- **Same concept, different expression.** The *idea* stays the same, but the phrasing should match each language's marketing conventions.
+- **Present ALL languages together** in the review table so the user can compare.
+
 ### Three Approaches (pick one per slide)
 
-| Type | What it does | Example |
-|------|-------------|---------|
-| **Paint a moment** | You picture yourself doing it | "Check your coffee without opening the app." |
-| **State an outcome** | What your life looks like after | "A home for every coffee you buy." |
-| **Kill a pain** | Name a problem and destroy it | "Never waste a great bag of coffee." |
+| Type | What it does | EN Example | KO Example |
+|------|-------------|------------|------------|
+| **Paint a moment** | You picture yourself doing it | "Check your coffee without opening the app." | "앱 안 열어도 커피를 확인하세요." |
+| **State an outcome** | What your life looks like after | "A home for every coffee you buy." | "모든 커피의 기록이 한곳에." |
+| **Kill a pain** | Name a problem and destroy it | "Never waste a great bag of coffee." | "좋은 원두, 더는 낭비 없이." |
 
 ### What NEVER Works
 
@@ -213,13 +279,14 @@ Get all headlines approved before building layouts. Bad copy ruins good design.
 - **Compound clauses**: "Save and customize X for every Y you own"
 - **Vague aspirational**: "Every item, tracked"
 - **Marketing buzzwords**: "AI-powered tips" (unless it's actually AI)
+- **Literal translations**: Translating word-for-word without cultural adaptation
 
 ### Copy Process
 
-1. Write 3 options per slide using the three approaches
+1. Write 3 options per slide per language using the three approaches
 2. Read each at arm's length — if you can't parse it in 1 second, it's too complex
-3. Check: does each line have 3-5 words? If not, adjust line breaks
-4. Present options to the user with reasoning for each
+3. Check line lengths per language (see character count rules above)
+4. Present options to the user in a comparison table with reasoning for each
 
 ### Reference Apps for Copy Style
 
@@ -234,14 +301,106 @@ Get all headlines approved before building layouts. Bad copy ruins good design.
 ```
 page.tsx
 ├── Constants (W, H, SIZES, design tokens from user's brand)
+├── Locale types & translations (LOCALES, LocaleTexts, TRANSLATIONS)
 ├── Phone component (mockup with screen overlay)
-├── Caption component (label + headline)
+├── Caption component (label + headline — reads from current locale)
 ├── Decorative components (blobs, glows, shapes — based on style direction)
-├── Screenshot1..N components (one per slide)
+├── Screenshot1..N components (one per slide, receives locale prop)
 ├── SCREENSHOTS array (registry)
 ├── ScreenshotPreview (ResizeObserver scaling + hover export)
-└── ScreenshotsPage (grid + toolbar + export logic)
+└── ScreenshotsPage (grid + toolbar + locale selector + export logic)
 ```
+
+### i18n Architecture
+
+#### Locale Types
+
+```typescript
+// Extensible locale system — add new languages by adding to this array and TRANSLATIONS
+const LOCALES = ["en", "ko"] as const;  // extend: ["en", "ko", "ja", "zh", ...]
+type Locale = (typeof LOCALES)[number];
+
+const LOCALE_LABELS: Record<Locale, string> = {
+  en: "English",
+  ko: "한국어",
+  // ja: "日本語",
+  // zh: "中文",
+};
+```
+
+#### Translations Structure
+
+```typescript
+// Each slide has localized label + headline per language
+type SlideTexts = {
+  label: string;    // category label (e.g., "PRODUCTIVITY" / "생산성")
+  headline: string; // main headline with <br /> for line breaks
+};
+
+// All slides' text for one locale
+type LocaleTexts = Record<string, SlideTexts>; // key = slide name
+
+const TRANSLATIONS: Record<Locale, LocaleTexts> = {
+  en: {
+    hero:         { label: "YOUR APP", headline: "Your main<br />tagline here" },
+    feature1:     { label: "FEATURE", headline: "One clear<br />benefit" },
+    // ... one entry per slide
+  },
+  ko: {
+    hero:         { label: "앱 이름", headline: "핵심 가치를<br />한 줄로" },
+    feature1:     { label: "기능", headline: "하나의 명확한<br />혜택" },
+    // ... matching entries
+  },
+};
+```
+
+#### Screenshot Components Receive Locale
+
+```tsx
+// Every screenshot component takes locale as a prop
+function ScreenshotHero({ locale }: { locale: Locale }) {
+  const t = TRANSLATIONS[locale].hero;
+  return (
+    <div style={{ width: W, height: H, position: "relative", overflow: "hidden" }}>
+      {/* background, decorations */}
+      <Caption label={t.label} headline={t.headline} />
+      <Phone src={`/screenshots/${locale}/home.png`} alt="Home" />
+      {/* If screenshots are language-neutral, use: src="/screenshots/home.png" */}
+    </div>
+  );
+}
+```
+
+#### Screenshot Registry with Locale
+
+```typescript
+const SCREENSHOTS = [
+  { name: "hero",     component: ScreenshotHero },
+  { name: "feature1", component: ScreenshotFeature1 },
+  // ...
+] as const;
+
+// Render: SCREENSHOTS.map(s => <s.component locale={currentLocale} />)
+```
+
+#### Localized App Screenshots Path Convention
+
+```
+public/screenshots/
+├── en/                    # English UI captures
+│   ├── home.png
+│   ├── feature-1.png
+│   └── ...
+├── ko/                    # Korean UI captures
+│   ├── home.png
+│   ├── feature-1.png
+│   └── ...
+└── shared/                # Language-neutral screenshots (optional)
+    ├── settings.png
+    └── ...
+```
+
+If the app UI is not localized, all screenshots go in `public/screenshots/` without locale subfolders, and components use the same `src` for all locales.
 
 ### Export Sizes
 
@@ -297,20 +456,22 @@ Design at the LARGEST size per device type and scale down for export.
 - 7-inch tablet: design at 1200x1920
 - 10-inch tablet: design at 1600x2560
 
-### Platform & Device Selector (Toolbar)
+### Platform, Device & Language Selector (Toolbar)
 
 The toolbar should include:
+- **Language toggle**: Buttons for each locale (EN / KO / ...). Switching re-renders all slides with that locale's text and font.
 - **Platform toggle**: iOS / Android / Both
 - **Device type selector**: Phone / 7-inch / 10-inch (Android only for tablets)
-- **Export**: per-slide, per-size, or bulk export all
+- **Export**: per-slide, per-size, or bulk export all (current language or all languages)
 
 ```tsx
 // Toolbar state
+const [locale, setLocale] = useState<Locale>(LOCALES[0]);
 const [platform, setPlatform] = useState<'ios' | 'android'>('ios');
 const [deviceType, setDeviceType] = useState<DeviceType>('phone');
 ```
 
-When the user selects a platform/device combo, the preview and export dimensions update accordingly.
+When the user selects a locale, the preview re-renders with that language's headlines, fonts, and (if applicable) localized app screenshots. Export uses the current locale or can bulk-export all locales.
 
 ### Rendering Strategy
 
@@ -472,19 +633,52 @@ el.style.opacity = "";
 el.style.zIndex = "";
 ```
 
-### Bulk Export by Platform/Device
+### Bulk Export by Platform/Device/Language
 
 ```typescript
-async function exportAll(platform: Platform, deviceType: DeviceType) {
+// Export one language
+async function exportLocale(locale: Locale, platform: Platform, deviceType: DeviceType) {
   const sizes = SIZES[platform]?.[deviceType] ?? [];
   for (const size of sizes) {
     for (let i = 0; i < SCREENSHOTS.length; i++) {
-      // Export each screenshot at each required size
-      const filename = `${String(i + 1).padStart(2, "0")}-${SCREENSHOTS[i].name}-${size.w}x${size.h}.png`;
+      // Folder: {locale}/{device}/  e.g., "en/phone/", "ko/phone/"
+      const filename = `${locale}/${deviceType}/${String(i + 1).padStart(2, "0")}-${SCREENSHOTS[i].name}-${size.w}x${size.h}.png`;
       // ... resize and download
     }
   }
 }
+
+// Export ALL languages at once
+async function exportAllLocales(platform: Platform, deviceType: DeviceType) {
+  for (const locale of LOCALES) {
+    // Set locale → re-render slides → wait for paint → export
+    setLocale(locale);
+    await new Promise(r => setTimeout(r, 500)); // wait for re-render
+    await exportLocale(locale, platform, deviceType);
+  }
+}
+```
+
+#### Export Folder Structure
+
+```
+export/
+├── en/
+│   ├── phone/
+│   │   ├── 01-hero-1320x2868.png
+│   │   ├── 02-feature1-1320x2868.png
+│   │   └── ...
+│   └── 10inch/
+│       └── ...
+├── ko/
+│   ├── phone/
+│   │   ├── 01-hero-1320x2868.png
+│   │   ├── 02-feature1-1320x2868.png
+│   │   └── ...
+│   └── 10inch/
+│       └── ...
+└── ja/  (if added)
+    └── ...
 ```
 
 ### Key Rules
@@ -496,7 +690,9 @@ async function exportAll(platform: Platform, deviceType: DeviceType) {
 - 300ms delay between sequential exports.
 - Set `fontFamily` on the offscreen container.
 - **Numbered filenames**: Prefix exports with zero-padded index so they sort correctly: `01-hero-1320x2868.png`, `02-freshness-1320x2868.png`, etc. Use `String(index + 1).padStart(2, "0")`.
-- **Folder per device type**: When exporting for multiple device types, organize into folders: `phone/`, `7inch/`, `10inch/`.
+- **Folder per locale and device type**: Organize exports as `{locale}/{device}/`. e.g., `en/phone/`, `ko/phone/`.
+- **Font on export container**: Set `fontFamily` to `LOCALE_FONTS[locale]` on the offscreen container before each locale's export.
+- **Re-render before export**: When bulk-exporting all locales, wait for React to re-render after locale change before capturing.
 
 ## Common Mistakes
 
@@ -515,3 +711,8 @@ async function exportAll(platform: Platform, deviceType: DeviceType) {
 | Same mockup for all platforms | Use platform-appropriate mockups (iPhone vs Android vs tablet) |
 | Tablet screenshots look like stretched phone | Design separate layouts for tablet aspect ratios |
 | Wrong export sizes per store | Use the SIZES registry — don't hardcode dimensions |
+| Same headline translated literally | Adapt copy natively per language — don't word-for-word translate |
+| Wrong font for CJK text | Use LOCALE_FONTS map — each locale needs its own font family |
+| Forgot to re-render before export | Wait 500ms after setLocale() before capturing — React needs time to re-render |
+| All languages in one folder | Organize by `{locale}/{device}/` — stores require separate uploads per language |
+| English line breaks applied to Korean | CJK characters are wider — fewer words per line, adjust `<br />` positions |
