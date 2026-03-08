@@ -471,16 +471,19 @@ Design at the LARGEST size per device type and scale down for export.
 - 7-inch tablet: design at 1200x1920
 - 10-inch tablet: design at 1600x2560
 
-### Language Selector & Export (Toolbar)
+### Toolbar (Language, Size Preview, Export)
 
 The toolbar should include:
 - **Language toggle**: Buttons for each locale (EN / KO / ...). Switching re-renders all slides with that locale's text and font.
+- **Platform/device size selector (preview only)**: Lets the user preview how slides look at each target size — iOS (6.9" / 6.5" / 6.3" / 6.1") and Android (phone / 7" / 10"). This is for **preview only** — export always generates ALL sizes.
 - **Export current language**: Exports all platforms & device types for the selected locale.
 - **Export all**: Exports all platforms, device types, and all languages at once.
 
 ```tsx
-// Toolbar state — language only. Platform & device are always ALL.
+// Toolbar state
 const [locale, setLocale] = useState<Locale>(LOCALES[0]);
+// Preview size selector — does NOT affect export (export always generates all)
+const [previewSize, setPreviewSize] = useState<{ w: number; h: number }>({ w: 1320, h: 2868 });
 ```
 
 When the user selects a locale, the preview re-renders with that language's headlines, fonts, and (if applicable) localized app screenshots. Export always generates all platform/device combinations — no selection needed.
@@ -779,13 +782,14 @@ Run the dev server and verify ALL interactive features work:
 | Language toggle | Click each locale button (EN / KO / ...) — slides re-render with correct text and font |
 | Language-specific screenshots | If localized UI, verify correct screenshot loads per locale (`/screenshots/{locale}/...`) |
 | Preview scaling | Resize browser window — slides scale correctly via ResizeObserver |
+| Platform/device size selector | UI allows selecting iOS sizes (6.9", 6.5", 6.3", 6.1") and Android sizes (phone, 7", 10") individually for preview |
 | Export single slide | Click export on one slide — downloads correct PNG at full resolution |
 | Export current language | Click "Export current" — downloads all platforms × all device types for selected locale |
 | Export all | Click "Export all" — downloads all locales × all platforms × all device types |
 | File naming | Exported files follow `{locale}/{platform}-{device}/01-name-WxH.png` convention |
 | No console errors | Open DevTools Console — no errors or warnings during any interaction |
 
-**All 8 checks must pass before proceeding.**
+**All 9 checks must pass before proceeding.**
 
 ### Round 2: Visual Quality (Per Slide)
 
