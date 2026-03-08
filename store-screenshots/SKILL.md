@@ -114,6 +114,21 @@ Based on the approved plan, brand analysis, and style direction, decide:
 
 ## Step 2: Set Up the Project
 
+### Project Location
+
+The screenshot generator is created inside `screenshots/` under the target app's project root.
+
+```
+my-app/                  # Target app project root
+├── src/                 # App source code
+├── screenshots/         # ← Scaffold the Next.js screenshot generator here
+│   ├── public/
+│   ├── src/app/
+│   ├── package.json
+│   └── ...
+└── ...
+```
+
 ### Detect Package Manager
 
 Check what's available, use this priority: **bun > pnpm > yarn > npm**
@@ -732,3 +747,101 @@ export/
 | Forgot to re-render before export | Wait 500ms after setLocale() before capturing — React needs time to re-render |
 | All languages in one folder | Organize by `{locale}/{device}/` — stores require separate uploads per language |
 | English line breaks applied to Korean | CJK characters are wider — fewer words per line, adjust `<br />` positions |
+
+## Step 7: Review & Iterate
+
+After building the page, run a **recursive review loop** before delivering. Do NOT skip this step. Repeat the loop until all checks pass.
+
+```dot
+digraph review {
+  "Build complete" -> "Round 1: Functional";
+  "Round 1: Functional" -> "Fix issues" [label="fail"];
+  "Fix issues" -> "Round 1: Functional";
+  "Round 1: Functional" -> "Round 2: Visual Quality" [label="pass"];
+  "Round 2: Visual Quality" -> "Fix issues2" [label="fail"];
+  "Fix issues2" -> "Round 2: Visual Quality";
+  "Round 2: Visual Quality" -> "Round 3: Copy & i18n" [label="pass"];
+  "Round 3: Copy & i18n" -> "Fix issues3" [label="fail"];
+  "Fix issues3" -> "Round 3: Copy & i18n";
+  "Round 3: Copy & i18n" -> "Round 4: Export Verification" [label="pass"];
+  "Round 4: Export Verification" -> "Fix issues4" [label="fail"];
+  "Fix issues4" -> "Round 4: Export Verification";
+  "Round 4: Export Verification" -> "Deliver" [label="pass"];
+}
+```
+
+### Round 1: Functional Check
+
+Run the dev server and verify ALL interactive features work:
+
+| Check | How to verify |
+|-------|---------------|
+| Language toggle | Click each locale button (EN / KO / ...) — slides re-render with correct text and font |
+| Language-specific screenshots | If localized UI, verify correct screenshot loads per locale (`/screenshots/{locale}/...`) |
+| Preview scaling | Resize browser window — slides scale correctly via ResizeObserver |
+| Export single slide | Click export on one slide — downloads correct PNG at full resolution |
+| Export current language | Click "Export current" — downloads all platforms × all device types for selected locale |
+| Export all | Click "Export all" — downloads all locales × all platforms × all device types |
+| File naming | Exported files follow `{locale}/{platform}-{device}/01-name-WxH.png` convention |
+| No console errors | Open DevTools Console — no errors or warnings during any interaction |
+
+**All 8 checks must pass before proceeding.**
+
+### Round 2: Visual Quality (Per Slide)
+
+Review EACH slide individually. For every slide, check:
+
+| Check | Criteria |
+|-------|----------|
+| **Phone mockup position** | Not clipped awkwardly, properly aligned, visible screen content is meaningful |
+| **Phone screen content** | Screenshot inside mockup shows the right app screen, not cropped badly, `object-cover object-top` working |
+| **Headline readability** | Readable at 50% zoom (simulates thumbnail in store), proper line breaks, no orphan words |
+| **Label text** | Category label visible, correct size (`W * 0.028`), proper weight |
+| **Background** | Gradient renders correctly, no banding, sufficient contrast with text |
+| **Decorative elements** | Visible but not distracting, not blocking phone content, not invisible |
+| **Layout variety** | No two consecutive slides use the same layout pattern |
+| **Visual rhythm** | At least 1-2 contrast slides (dark ↔ light) across the set |
+| **Spacing** | Nothing touching edges awkwardly, adequate breathing room |
+| **Aspect ratio** | Slide proportions match target (e.g., 1320:2868 for iOS phone) |
+
+**Fix any issues found, then re-check the affected slides.**
+
+### Round 3: Copy & i18n Quality
+
+Switch through EACH language and verify:
+
+| Check | Criteria |
+|-------|----------|
+| **Native feel** | Copy reads naturally in each language — not a literal translation |
+| **Line length** | EN: 3-5 words/line, KO: 2-4 어절/line, CJK adjusted per rules |
+| **Line breaks** | `<br />` positions make sense for each language (different from EN) |
+| **One idea per slide** | No slide uses "and" or combines two concepts |
+| **Iron Rules** | Short common words, readable at thumbnail, intentional breaks |
+| **Font rendering** | Correct font family per locale (Latin vs CJK), proper weights, no tofu/fallback glyphs |
+| **Label translations** | Category labels translated correctly per locale |
+| **Consistency** | Same design quality across all languages — no language feels like an afterthought |
+
+**Fix any issues found, then re-check all languages.**
+
+### Round 4: Export Verification
+
+Actually export and inspect the output files:
+
+| Check | Criteria |
+|-------|----------|
+| **File count** | `(slides) × (sizes per platform) × (locales)` files total. Count matches expected. |
+| **Folder structure** | `{locale}/{platform}-{device}/` — all folders present |
+| **File dimensions** | Open a sample from each size — pixel dimensions match spec (e.g., 1320×2868 for iOS 6.9") |
+| **Not blank** | No blank/white/black images — double-call trick working |
+| **Font in export** | Text renders with correct font in exported PNG (not system fallback) |
+| **Image quality** | No blurriness, no artifacts, gradients smooth, screenshots sharp |
+| **Sort order** | Files sort correctly by zero-padded prefix (`01-`, `02-`, ...) |
+| **iOS sizes** | 4 size variants per slide (6.9", 6.5", 6.3", 6.1") |
+| **Android sizes** | Phone (1080×1920), 7" (1200×1920), 10" (1600×2560) per slide |
+| **All locales present** | Every locale has complete export — no missing language folders |
+
+**If ANY check fails, fix the issue and re-run Round 4.**
+
+### Review Loop Rule
+
+Each round must fully pass before moving to the next. If a fix in a later round breaks something from an earlier round, go back to that round and re-verify. Continue until all 4 rounds pass cleanly in sequence.
