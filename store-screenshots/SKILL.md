@@ -791,13 +791,20 @@ Run the dev server and verify ALL interactive features work:
 
 **All 9 checks must pass before proceeding.**
 
-### Round 2: Visual Quality (Per Slide)
+### Round 2: Visual Quality (Per Slide × Per Size)
 
-Review EACH slide individually. For every slide, check:
+Review EACH slide at **every target size**. iOS and Android have different aspect ratios and dimensions — typography and mockups that look fine at one size may overlap or clip at another.
+
+**Review procedure:** Use the preview size selector to switch through ALL sizes for EACH slide:
+- iOS: 6.9" (1320×2868), 6.5" (1284×2778), 6.3" (1206×2622), 6.1" (1125×2436)
+- Android: Phone (1080×1920), 7" (1200×1920), 10" (1600×2560)
+
+For every slide × every size, check:
 
 | Check | Criteria |
 |-------|----------|
-| **Phone mockup position** | Not clipped awkwardly, properly aligned, visible screen content is meaningful |
+| **Typography vs mockup overlap** | Headline and label text must NOT overlap with the phone mockup at ANY size. iOS (tall, narrow) and Android (shorter, wider) have very different safe zones — verify both. |
+| **Phone mockup position** | Not clipped awkwardly, properly aligned, visible screen content is meaningful. Check that phone doesn't overflow canvas at smaller sizes. |
 | **Phone screen content** | Screenshot inside mockup shows the right app screen, not cropped badly, `object-cover object-top` working |
 | **Headline readability** | Readable at 50% zoom (simulates thumbnail in store), proper line breaks, no orphan words |
 | **Label text** | Category label visible, correct size (`W * 0.028`), proper weight |
@@ -805,10 +812,19 @@ Review EACH slide individually. For every slide, check:
 | **Decorative elements** | Visible but not distracting, not blocking phone content, not invisible |
 | **Layout variety** | No two consecutive slides use the same layout pattern |
 | **Visual rhythm** | At least 1-2 contrast slides (dark ↔ light) across the set |
-| **Spacing** | Nothing touching edges awkwardly, adequate breathing room |
-| **Aspect ratio** | Slide proportions match target (e.g., 1320:2868 for iOS phone) |
+| **Spacing** | Nothing touching edges awkwardly, adequate breathing room at all sizes |
+| **Aspect ratio** | Slide proportions match target — especially verify Android phone (9:16) vs iOS phone (~9:19.5) difference |
 
-**Fix any issues found, then re-check the affected slides.**
+**Key size-specific risks:**
+
+| Size transition | What breaks |
+|----------------|-------------|
+| iOS → Android phone | Android is much shorter (1920 vs 2868). Headline + mockup that fit vertically on iOS will overlap on Android. |
+| Android phone → 7" tablet | Nearly same resolution (1080×1920 vs 1200×1920) but wider — horizontal spacing changes. |
+| Android phone → 10" tablet | Taller (2560) and wider (1600) — mockup may look too small if sized by percentage. |
+| iOS 6.9" → 6.1" | Narrower (1125 vs 1320) — text may wrap differently, mockup may clip at edges. |
+
+**If ANY size shows overlap or clipping, fix the layout (use responsive positioning or size-conditional styles) and re-check ALL sizes.**
 
 ### Round 3: Copy & i18n Quality
 
