@@ -91,12 +91,12 @@ Present the Screenshot Plan with headlines shown **per language**:
 Then ask the user:
 
 1. **Languages** — "Which languages do you need? (e.g., English + Korean, or English + Korean + Japanese, etc.) Each language generates a separate set of screenshots."
-2. **Platform** — "Which store? iOS App Store, Google Play Store, or both?"
-3. **Device types** — "Which device types? (Phone / 7-inch tablet / 10-inch tablet)"
-4. **Review the plan** — "Here's what I found and propose. Adjust the order, swap headlines, add/remove slides, or change anything."
-5. **App screenshots** — "I'll need actual device captures for each slide. Can you provide PNGs per language (if localized UI), or should I note which screens to capture?"
-6. **Style direction** — "Based on your brand, I suggest [style]. Want to adjust? (warm/organic, dark/moody, clean/minimal, bold/colorful, gradient-heavy, flat)"
-7. **Any overrides** — "Anything else you want to change or add?"
+2. **Review the plan** — "Here's what I found and propose. Adjust the order, swap headlines, add/remove slides, or change anything."
+3. **App screenshots** — "I'll need actual device captures for each slide. Can you provide PNGs per language (if localized UI), or should I note which screens to capture?"
+4. **Style direction** — "Based on your brand, I suggest [style]. Want to adjust? (warm/organic, dark/moody, clean/minimal, bold/colorful, gradient-heavy, flat)"
+5. **Any overrides** — "Anything else you want to change or add?"
+
+**Platform & Device: Always generate ALL.** Do NOT ask the user which platform or device type. Always generate for both iOS and Android, and all device types (phone, 7-inch tablet, 10-inch tablet). The user can delete what they don't need after export.
 
 **Language-specific app screenshots:** If the app has localized UI, the user should provide separate screenshots per language (e.g., `screenshots/en/home.png`, `screenshots/ko/home.png`). If the UI is language-neutral or only in one language, the same screenshots can be shared across all locales.
 
@@ -456,22 +456,19 @@ Design at the LARGEST size per device type and scale down for export.
 - 7-inch tablet: design at 1200x1920
 - 10-inch tablet: design at 1600x2560
 
-### Platform, Device & Language Selector (Toolbar)
+### Language Selector & Export (Toolbar)
 
 The toolbar should include:
 - **Language toggle**: Buttons for each locale (EN / KO / ...). Switching re-renders all slides with that locale's text and font.
-- **Platform toggle**: iOS / Android / Both
-- **Device type selector**: Phone / 7-inch / 10-inch (Android only for tablets)
-- **Export**: per-slide, per-size, or bulk export all (current language or all languages)
+- **Export current language**: Exports all platforms & device types for the selected locale.
+- **Export all**: Exports all platforms, device types, and all languages at once.
 
 ```tsx
-// Toolbar state
+// Toolbar state — language only. Platform & device are always ALL.
 const [locale, setLocale] = useState<Locale>(LOCALES[0]);
-const [platform, setPlatform] = useState<'ios' | 'android'>('ios');
-const [deviceType, setDeviceType] = useState<DeviceType>('phone');
 ```
 
-When the user selects a locale, the preview re-renders with that language's headlines, fonts, and (if applicable) localized app screenshots. Export uses the current locale or can bulk-export all locales.
+When the user selects a locale, the preview re-renders with that language's headlines, fonts, and (if applicable) localized app screenshots. Export always generates all platform/device combinations — no selection needed.
 
 ### Rendering Strategy
 
@@ -641,20 +638,32 @@ async function exportLocale(locale: Locale, platform: Platform, deviceType: Devi
   const sizes = SIZES[platform]?.[deviceType] ?? [];
   for (const size of sizes) {
     for (let i = 0; i < SCREENSHOTS.length; i++) {
-      // Folder: {locale}/{device}/  e.g., "en/phone/", "ko/phone/"
-      const filename = `${locale}/${deviceType}/${String(i + 1).padStart(2, "0")}-${SCREENSHOTS[i].name}-${size.w}x${size.h}.png`;
+      // Folder: {locale}/{platform}-{device}/  e.g., "en/ios-phone/", "ko/android-7inch/"
+      const filename = `${locale}/${platform}-${deviceType}/${String(i + 1).padStart(2, "0")}-${SCREENSHOTS[i].name}-${size.w}x${size.h}.png`;
       // ... resize and download
     }
   }
 }
 
-// Export ALL languages at once
-async function exportAllLocales(platform: Platform, deviceType: DeviceType) {
+// Export one language — all platforms & device types
+async function exportLocaleAll(locale: Locale) {
+  const allCombos: [Platform, DeviceType][] = [
+    ['ios', 'phone'],
+    ['android', 'phone'],
+    ['android', '7inch'],
+    ['android', '10inch'],
+  ];
+  for (const [platform, deviceType] of allCombos) {
+    await exportLocale(locale, platform, deviceType);
+  }
+}
+
+// Export ALL languages × ALL platforms × ALL device types
+async function exportEverything() {
   for (const locale of LOCALES) {
-    // Set locale → re-render slides → wait for paint → export
     setLocale(locale);
     await new Promise(r => setTimeout(r, 500)); // wait for re-render
-    await exportLocale(locale, platform, deviceType);
+    await exportLocaleAll(locale);
   }
 }
 ```
@@ -664,18 +673,25 @@ async function exportAllLocales(platform: Platform, deviceType: DeviceType) {
 ```
 export/
 ├── en/
-│   ├── phone/
+│   ├── ios-phone/
 │   │   ├── 01-hero-1320x2868.png
-│   │   ├── 02-feature1-1320x2868.png
+│   │   ├── 01-hero-1284x2778.png
 │   │   └── ...
-│   └── 10inch/
+│   ├── android-phone/
+│   │   ├── 01-hero-1080x1920.png
+│   │   └── ...
+│   ├── android-7inch/
+│   │   └── ...
+│   └── android-10inch/
 │       └── ...
 ├── ko/
-│   ├── phone/
-│   │   ├── 01-hero-1320x2868.png
-│   │   ├── 02-feature1-1320x2868.png
+│   ├── ios-phone/
 │   │   └── ...
-│   └── 10inch/
+│   ├── android-phone/
+│   │   └── ...
+│   ├── android-7inch/
+│   │   └── ...
+│   └── android-10inch/
 │       └── ...
 └── ja/  (if added)
     └── ...
@@ -690,7 +706,7 @@ export/
 - 300ms delay between sequential exports.
 - Set `fontFamily` on the offscreen container.
 - **Numbered filenames**: Prefix exports with zero-padded index so they sort correctly: `01-hero-1320x2868.png`, `02-freshness-1320x2868.png`, etc. Use `String(index + 1).padStart(2, "0")`.
-- **Folder per locale and device type**: Organize exports as `{locale}/{device}/`. e.g., `en/phone/`, `ko/phone/`.
+- **Folder per locale, platform, and device type**: Organize exports as `{locale}/{platform}-{device}/`. e.g., `en/ios-phone/`, `ko/android-7inch/`.
 - **Font on export container**: Set `fontFamily` to `LOCALE_FONTS[locale]` on the offscreen container before each locale's export.
 - **Re-render before export**: When bulk-exporting all locales, wait for React to re-render after locale change before capturing.
 
