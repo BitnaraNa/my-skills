@@ -1,38 +1,38 @@
 ---
 name: wiki
-description: LLM 관리형 개인 위키. 소스를 인제스트하고, 위키를 쿼리하고, 건강 상태를 점검한다. 서브커맨드: init, ingest, query, lint.
+description: LLM-managed personal wiki. Ingest sources, query the wiki, and check health status. Subcommands: init, ingest, query, lint.
 ---
 
 # Wiki
 
-LLM이 작성·유지보수하는 개인 위키 시스템. Obsidian을 뷰어로 사용한다.
+A personal wiki system written and maintained by an LLM. Uses Obsidian as the viewer.
 
-## 사용법
+## Usage
 
-- `/wiki init` — 위키 초기 구조 생성
-- `/wiki ingest <파일|디렉토리>` — 소스를 위키에 통합
-- `/wiki query <질문>` — 위키를 검색하고 답변 합성
-- `/wiki lint` — 위키 건강 상태 점검
+- `/wiki init` — Create the initial wiki structure
+- `/wiki ingest <file|directory>` — Integrate sources into the wiki
+- `/wiki query <question>` — Search the wiki and synthesize an answer
+- `/wiki lint` — Check wiki health status
 
-## 서브커맨드 파싱
+## Subcommand Parsing
 
-인자(ARGUMENTS)에서 첫 번째 단어를 서브커맨드로 파싱한다. 나머지는 해당 오퍼레이션의 인자.
+Parse the first word from ARGUMENTS as the subcommand. The remainder are arguments for that operation.
 
-| 첫 번째 단어 | 읽을 파일 | 인자 |
-|-------------|----------|------|
-| `init` | `ops/init.md` | 없음 |
-| `ingest` | `ops/ingest.md` | 나머지 전체 (파일 또는 디렉토리 경로) |
-| `query` | `ops/query.md` | 나머지 전체 (질문 텍스트) |
-| `lint` | `ops/lint.md` | 없음 |
+| First word | File to read | Arguments |
+|------------|--------------|-----------|
+| `init` | `ops/init.md` | None |
+| `ingest` | `ops/ingest.md` | Everything remaining (file or directory path) |
+| `query` | `ops/query.md` | Everything remaining (question text) |
+| `lint` | `ops/lint.md` | None |
 
-서브커맨드가 없거나 인식할 수 없으면 위 사용법을 안내한다.
+If no subcommand is provided or it is unrecognized, display the usage above.
 
-## 실행
+## Execution
 
-1. 서브커맨드를 파싱한다.
-2. 해당 `ops/*.md` 파일을 Read 도구로 읽는다.
-3. 읽은 파일의 지시를 그대로 따른다. 인자가 있으면 함께 전달한다.
+1. Parse the subcommand.
+2. Read the corresponding `ops/*.md` file using the Read tool.
+3. Follow the instructions in the file exactly. Pass along any arguments if present.
 
-## 위키 위치
+## Wiki Location
 
-위키 루트는 현재 작업 디렉토리의 `wiki/` 이다. 만약 현재 디렉토리가 `wiki/` 자체이면 현재 디렉토리를 위키 루트로 사용한다.
+The wiki root is the `wiki/` directory within the current working directory. If the current directory is `wiki/` itself, use the current directory as the wiki root.

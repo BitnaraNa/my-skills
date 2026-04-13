@@ -1,54 +1,54 @@
 # Wiki Query
 
-위키를 검색하고 답변을 합성한다.
+Search the wiki and synthesize an answer.
 
-## 인자
+## Arguments
 
-- 질문 텍스트 (예: `LLM 위키와 RAG의 차이점은?`)
+- Question text (e.g. `What is the difference between LLM wiki and RAG?`)
 
-## 사전 조건
+## Prerequisites
 
-- 위키가 초기화되어 있어야 한다 (`index.md` 존재 확인).
+- The wiki must be initialized (verify that `index.md` exists).
 
-## 절차
+## Procedure
 
-### 1. index.md 읽기
+### 1. Read index.md
 
-Read 도구로 `index.md`를 읽어 위키 전체 페이지 목록과 태그를 파악한다.
+Use the Read tool to read `index.md` and understand the full list of wiki pages and their tags.
 
-### 2. 관련 페이지 식별
+### 2. Identify Relevant Pages
 
-질문과 관련된 페이지를 index.md의 설명과 태그를 기반으로 식별한다. 필요하면 Grep 도구로 `pages/` 디렉토리에서 키워드를 검색한다.
+Identify pages related to the question based on the descriptions and tags in index.md. If needed, use the Grep tool to search for keywords in the `pages/` directory.
 
-### 3. 관련 페이지 읽기
+### 3. Read Relevant Pages
 
-식별한 관련 페이지들을 Read 도구로 읽는다.
+Use the Read tool to read the identified relevant pages.
 
-### 4. 답변 합성
+### 4. Synthesize the Answer
 
-- 읽은 페이지들의 내용을 종합하여 답변을 작성한다.
-- 답변에 출처 페이지를 `[[페이지명]]` 형식으로 인용한다.
-- 여러 페이지의 정보를 종합하는 경우 어떤 정보가 어느 페이지에서 왔는지 명시한다.
-- 페이지 간 모순이 있으면 양쪽을 모두 제시한다.
+- Compile the content from the read pages to compose an answer.
+- Cite the source pages in the answer using the `[[page name]]` format.
+- When synthesizing information from multiple pages, specify which information came from which page.
+- If there are contradictions between pages, present both sides.
 
-### 5. 위키 편입 제안
+### 5. Propose Wiki Inclusion
 
-답변이 다음 조건 중 하나를 만족하면 위키에 편입할지 사용자에게 제안한다:
-- 여러 페이지를 종합한 새로운 분석이나 비교
-- 기존에 없던 관점이나 연결
-- 반복적으로 참조될 가능성이 있는 내용
+If the answer satisfies any of the following conditions, propose to the user whether to add it to the wiki:
+- A new analysis or comparison synthesizing multiple pages
+- A perspective or connection that did not previously exist
+- Content likely to be referenced repeatedly
 
-제안 형식: "이 분석을 위키 페이지로 저장할까요?"
+Proposal format: "Would you like to save this analysis as a wiki page?"
 
-### 6. 위키 편입 (사용자 승인 시)
+### 6. Wiki Inclusion (upon user approval)
 
-- `pages/`에 새 페이지를 Write. 프론트매터의 `sources`에는 참조한 위키 페이지들의 원본 소스를 포함.
-- 관련 페이지에 새 페이지로의 `[[wikilink]]` 추가.
-- `index.md` 갱신.
-- `log.md`에 query 기록 prepend:
+- Write the new page to `pages/`. Include the original sources of referenced wiki pages in the frontmatter `sources` field.
+- Add a `[[wikilink]]` to the new page in related pages.
+- Update `index.md`.
+- Prepend the query record to `log.md`:
 
 ```markdown
-## [YYYY-MM-DD] query | 질문 내용
-- 답변 요약 한 줄
-- 생성: [[새 페이지명]]
+## [YYYY-MM-DD] query | question content
+- One-line summary of the answer
+- Created: [[new page name]]
 ```

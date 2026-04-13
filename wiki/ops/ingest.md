@@ -1,113 +1,113 @@
 # Wiki Ingest
 
-소스를 읽고 위키에 통합한다.
+Read a source and integrate it into the wiki.
 
-## 인자
+## Arguments
 
-- 파일 경로 (예: `raw/article.md`) → 단건 인제스트
-- 디렉토리 경로 (예: `raw/`) → 배치 인제스트
-- 인자 없음 → `raw/` 디렉토리를 기본으로 배치 인제스트
+- File path (e.g. `raw/article.md`) → single ingest
+- Directory path (e.g. `raw/`) → batch ingest
+- No argument → batch ingest using `raw/` directory as default
 
-## 사전 조건
+## Prerequisites
 
-- 위키가 초기화되어 있어야 한다 (`index.md` 존재 확인). 없으면 `/wiki init`을 먼저 실행하라고 안내.
-- 대상 소스 파일이 `raw/` 디렉토리에 존재해야 한다.
+- The wiki must be initialized (check for `index.md`). If missing, prompt the user to run `/wiki init` first.
+- The target source file must exist in the `raw/` directory.
 
-## 단건 인제스트
+## Single Ingest
 
-파일 경로가 주어졌을 때 현재 세션에서 직접 처리한다.
+When a file path is given, process it directly in the current session.
 
-### 1. 소스 읽기
+### 1. Read Source
 
-- Read 도구로 소스 파일을 읽는다.
-- 소스에 이미지 참조 (`![[image.png]]`, `![](path)`)가 있으면 Read 도구로 이미지도 확인한다.
+- Read the source file using the Read tool.
+- If the source contains image references (`![[image.png]]`, `![](path)`), also inspect the images using the Read tool.
 
-### 2. 핵심 내용 공유
+### 2. Share Key Content
 
-사용자에게 소스의 핵심 내용을 3-5줄로 요약해서 공유한다. 사용자가 특별히 강조하고 싶은 점이 있는지 묻는다.
+Summarize the key content of the source in 3-5 lines and share it with the user. Ask if there is anything the user would like to emphasize.
 
-### 3. 위키 페이지 생성/수정
+### 3. Create/Update Wiki Pages
 
-- `index.md`를 읽어 기존 위키 페이지 목록을 파악한다.
-- 이 소스에서 나온 주요 개념, 엔티티, 인사이트를 식별한다.
-- 각각에 대해:
-  - 기존 페이지가 있으면: 해당 페이지를 Read → 새 정보를 통합하여 Edit. `sources` 프론트매터에 이 소스 추가. `updated` 날짜 갱신.
-  - 기존 페이지가 없으면: `pages/` 에 새 페이지를 Write. 프론트매터 형식은 CLAUDE.md (위키 스키마)를 따른다.
-- 모든 페이지에 관련 `[[wikilink]]` 크로스레퍼런스를 추가한다.
-- 새 정보가 기존 내용과 모순되면 양쪽 정보를 명시하고 소스를 밝힌다.
+- Read `index.md` to identify the existing wiki page list.
+- Identify the main concepts, entities, and insights from this source.
+- For each one:
+  - If a matching page exists: Read that page → integrate the new information via Edit. Add this source to the `sources` frontmatter. Update the `updated` date.
+  - If no matching page exists: Write a new page in `pages/`. Follow the frontmatter format defined in CLAUDE.md (wiki schema).
+- Add relevant `[[wikilink]]` cross-references to all pages.
+- If new information contradicts existing content, state both and cite the sources.
 
-### 4. index.md 갱신
+### 4. Update index.md
 
-- 태그별 목록 섹션에 새/수정 페이지 반영.
-- 전체 목록 테이블에 새/수정 페이지 반영.
-- 기존 항목의 소스 수, 최종 수정일 업데이트.
+- Reflect new/updated pages in the per-tag list section.
+- Reflect new/updated pages in the full page table.
+- Update the source count and last-modified date for existing entries.
 
-### 5. log.md 기록
+### 5. Write to log.md
 
-`log.md` 상단(# Wiki Log 헤더 바로 다음)에 다음 형식으로 prepend:
+Prepend to the top of `log.md` (immediately after the `# Wiki Log` header) using the following format:
 
 ```markdown
-## [YYYY-MM-DD] ingest | 소스 제목
-- 소스: raw/파일명.md
-- 생성: [[새 페이지1]], [[새 페이지2]]
-- 수정: [[기존 페이지1]]
-- 요약: 핵심 내용 한 줄
+## [YYYY-MM-DD] ingest | source title
+- source: raw/filename.md
+- created: [[new page 1]], [[new page 2]]
+- updated: [[existing page 1]]
+- summary: one-line summary of key content
 ```
 
-### 6. 완료 보고
+### 6. Completion Report
 
-생성/수정한 페이지 목록과 각 페이지에 추가된 핵심 내용을 요약해서 보고한다.
+Report a summary of created/updated pages and the key content added to each page.
 
-## 배치 인제스트
+## Batch Ingest
 
-디렉토리 경로가 주어졌을 때 파일별로 서브에이전트를 순차 실행한다.
+When a directory path is given, run sub-agents sequentially per file.
 
-### 1. 미인제스트 파일 목록 수집
+### 1. Collect List of Un-ingested Files
 
-- `log.md`를 읽어 이미 인제스트된 소스 경로 목록을 추출한다 (`- 소스:` 라인에서 경로 파싱).
-- 대상 디렉토리의 `.md` 파일 목록을 Glob으로 수집한다.
-- 이미 인제스트된 파일을 제외한 미인제스트 파일 목록을 확정한다.
+- Read `log.md` to extract the list of already-ingested source paths (parse paths from `- source:` lines).
+- Collect the list of `.md` files in the target directory using Glob.
+- Finalize the list of un-ingested files by excluding already-ingested ones.
 
-### 2. 미인제스트 파일이 없으면
+### 2. If No Un-ingested Files Exist
 
-"새로 인제스트할 소스가 없습니다"라고 안내하고 종료한다.
+Inform the user "There are no new sources to ingest" and exit.
 
-### 3. 파일별 서브에이전트 순차 실행
+### 3. Run Sub-agents Sequentially Per File
 
-미인제스트 파일 목록을 사용자에게 보여주고, 처리를 시작한다.
+Show the list of un-ingested files to the user and begin processing.
 
-각 파일에 대해 Agent 도구로 서브에이전트를 실행한다:
+For each file, run a sub-agent using the Agent tool:
 
-**에이전트 프롬프트 템플릿:**
+**Agent prompt template:**
 
 ```
-위키 인제스트를 수행한다. 아래 절차를 따라라.
+Perform a wiki ingest. Follow the procedure below.
 
-## 위키 루트
-{위키 루트 절대 경로}
+## Wiki Root
+{absolute path to wiki root}
 
-## 위키 스키마
-위키 루트의 CLAUDE.md를 Read 도구로 읽고 컨벤션을 따라라.
+## Wiki Schema
+Read CLAUDE.md in the wiki root using the Read tool and follow the conventions.
 
-## 대상 소스
-{소스 파일 절대 경로}
+## Target Source
+{absolute path to source file}
 
-## 절차
-1. 소스 파일을 Read 도구로 읽는다.
-2. index.md를 Read 도구로 읽어 기존 위키 페이지를 파악한다.
-3. 소스에서 주요 개념, 엔티티, 인사이트를 식별한다.
-4. 각각에 대해 기존 페이지가 있으면 Edit, 없으면 pages/에 새 페이지 Write.
-5. 모든 페이지에 [[wikilink]] 크로스레퍼런스 추가.
-6. index.md를 갱신한다 (태그별 목록 + 전체 목록 테이블).
-7. log.md 상단에 인제스트 기록을 prepend 한다.
-8. 생성/수정한 페이지 목록과 요약을 보고한다.
+## Procedure
+1. Read the source file using the Read tool.
+2. Read index.md using the Read tool to identify existing wiki pages.
+3. Identify the main concepts, entities, and insights from the source.
+4. For each one: Edit the existing page if it exists, otherwise Write a new page in pages/.
+5. Add [[wikilink]] cross-references to all pages.
+6. Update index.md (per-tag list + full page table).
+7. Prepend the ingest record to the top of log.md.
+8. Report the list of created/updated pages with a summary.
 ```
 
-각 에이전트가 완료된 후 다음 파일로 진행한다 (순차 실행 — index.md, log.md 충돌 방지).
+After each agent completes, proceed to the next file (sequential execution — prevents conflicts in index.md and log.md).
 
-### 4. 전체 완료 보고
+### 4. Final Completion Report
 
-모든 파일 처리 후, 전체 결과를 요약 보고한다:
-- 처리한 소스 수
-- 생성한 페이지 수
-- 수정한 페이지 수
+After all files are processed, report an overall summary:
+- Number of sources processed
+- Number of pages created
+- Number of pages updated

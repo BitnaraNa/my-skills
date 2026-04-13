@@ -1,76 +1,76 @@
 # Wiki Schema
 
-이 디렉토리는 LLM 관리형 개인 위키이다. LLM이 모든 위키 페이지를 작성·유지보수한다. 사용자는 소스 큐레이션, 탐색, 질문에 집중한다.
+This directory is an LLM-managed personal wiki. The LLM writes and maintains all wiki pages. The user focuses on source curation, navigation, and asking questions.
 
-## 디렉토리 구조
+## Directory Structure
 
-- `raw/` — 원본 소스. 불변. LLM은 읽기만 한다.
-  - `assets/` — 이미지 파일
-- `pages/` — LLM이 소유하는 위키 페이지. 플랫 구조.
-- `index.md` — 위키 전체 카탈로그.
-- `log.md` — 시간순 활동 기록.
+- `raw/` — Original sources. Immutable. The LLM only reads from here.
+  - `assets/` — Image files
+- `pages/` — Wiki pages owned by the LLM. Flat structure.
+- `index.md` — Full wiki catalog.
+- `log.md` — Chronological activity log.
 
-## 페이지 형식
+## Page Format
 
-모든 위키 페이지(`pages/*.md`)는 다음 형식을 따른다:
+All wiki pages (`pages/*.md`) follow this format:
 
 ```yaml
 ---
-title: 페이지 제목
-tags: [태그1, 태그2]
-sources: [raw/소스파일.md]
+title: Page Title
+tags: [tag1, tag2]
+sources: [raw/source-file.md]
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 ---
 ```
 
-- **title**: 파일명과 일치.
-- **tags**: 자유 형식. 사후 분류용.
-- **sources**: 이 페이지에 기여한 원본 소스 경로 목록.
-- **created**: 최초 생성일.
-- **updated**: 마지막 수정일.
+- **title**: Matches the filename.
+- **tags**: Free-form. Used for post-hoc categorization.
+- **sources**: List of original source paths that contributed to this page.
+- **created**: Date first created.
+- **updated**: Date last modified.
 
-## 링크 컨벤션
+## Link Conventions
 
-- 위키 페이지 간 참조는 `[[페이지명]]` 형식 (Obsidian wikilink).
-- 페이지 하단에 `## 관련 페이지` 섹션으로 주요 연결 명시.
-- 본문에서도 관련 개념 언급 시 `[[wikilink]]` 사용.
+- References between wiki pages use the `[[page-name]]` format (Obsidian wikilink).
+- Key connections are listed in a `## Related Pages` section at the bottom of each page.
+- Use `[[wikilink]]` inline in body text when mentioning related concepts.
 
-## index.md 형식
+## index.md Format
 
 ```markdown
 # Wiki Index
 
-## 태그별 목록
-### 태그이름
-- [[페이지명]] — 한 줄 설명
+## By Tag
+### tag-name
+- [[page-name]] — one-line description
 
-## 전체 목록
-| 페이지 | 태그 | 소스 수 | 최종 수정 |
+## All Pages
+| Page | Tags | Sources | Last Modified |
 |--------|------|---------|-----------|
-| [[페이지명]] | 태그1, 태그2 | N | YYYY-MM-DD |
+| [[page-name]] | tag1, tag2 | N | YYYY-MM-DD |
 ```
 
-## log.md 형식
+## log.md Format
 
-최신이 위 (prepend). 각 항목은 `## [YYYY-MM-DD] 오퍼레이션 | 제목` 형식.
+Latest entry at the top (prepend). Each entry uses the format `## [YYYY-MM-DD] operation | title`.
 
 ```markdown
 # Wiki Log
 
-## [YYYY-MM-DD] ingest | 소스 제목
-- 소스: raw/파일명.md
-- 생성: [[새 페이지]]
-- 수정: [[기존 페이지]]
-- 요약: 핵심 내용 한 줄
+## [YYYY-MM-DD] ingest | Source Title
+- source: raw/filename.md
+- created: [[new page]]
+- updated: [[existing page]]
+- summary: one-line summary of key content
 ```
 
-## 규칙
+## Rules
 
-1. `raw/` 디렉토리의 파일은 절대 수정하지 않는다.
-2. `pages/` 디렉토리의 파일만 생성·수정·삭제한다.
-3. 페이지를 생성하거나 수정할 때마다 `index.md`를 갱신한다.
-4. 모든 활동은 `log.md`에 기록한다.
-5. 기존 페이지와 관련된 새 정보가 들어오면 기존 페이지도 업데이트한다.
-6. 새 정보가 기존 내용과 모순되면 양쪽을 모두 명시하고 어느 소스에서 온 정보인지 밝힌다.
-7. 페이지 간 크로스레퍼런스를 적극적으로 추가한다.
+1. Never modify files in the `raw/` directory.
+2. Only create, modify, or delete files in the `pages/` directory.
+3. Update `index.md` every time a page is created or modified.
+4. Log all activity in `log.md`.
+5. If new information relates to an existing page, update that page as well.
+6. If new information contradicts existing content, state both explicitly and indicate which source each piece of information comes from.
+7. Actively add cross-references between pages.

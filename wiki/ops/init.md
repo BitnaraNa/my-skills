@@ -1,56 +1,56 @@
 # Wiki Init
 
-위키 초기 구조를 생성한다.
+Creates the initial wiki structure.
 
-## 사전 조건
+## Prerequisites
 
-- 위키 루트 경로를 확인한다 (SKILL.md의 "위키 위치" 참조).
+- Confirm the wiki root path (see "Wiki Location" in SKILL.md).
 
-## 절차
+## Procedure
 
-### 1. 이미 초기화되었는지 확인
+### 1. Check if already initialized
 
-위키 루트에 `index.md`가 존재하면 이미 초기화된 것이다.
-사용자에게 "위키가 이미 초기화되어 있습니다"라고 안내하고 종료한다.
+If `index.md` exists in the wiki root, the wiki is already initialized.
+Inform the user "The wiki is already initialized" and stop.
 
-### 2. 디렉토리 생성
+### 2. Create directories
 
-다음 디렉토리를 생성한다:
+Create the following directories:
 - `raw/`
 - `raw/assets/`
 - `pages/`
 
-### 3. index.md 생성
+### 3. Create index.md
 
-위키 루트에 다음 내용으로 `index.md`를 생성한다:
+Create `index.md` in the wiki root with the following content:
 
 ```markdown
 # Wiki Index
 
-## 태그별 목록
+## List by Tag
 
-(아직 페이지가 없습니다)
+(No pages yet)
 
-## 전체 목록
-| 페이지 | 태그 | 소스 수 | 최종 수정 |
-|--------|------|---------|-----------|
+## Full List
+| Page | Tags | Sources | Last Modified |
+|------|------|---------|---------------|
 ```
 
-### 4. log.md 생성
+### 4. Create log.md
 
-위키 루트에 다음 내용으로 `log.md`를 생성한다:
+Create `log.md` in the wiki root with the following content:
 
 ```markdown
 # Wiki Log
 ```
 
-### 5. CLAUDE.md 생성
+### 5. Create CLAUDE.md
 
-이 스킬의 `schema-template.md` 파일을 Read 도구로 읽고, 그 내용을 위키 루트의 `CLAUDE.md`로 Write 한다.
+Read this skill's `schema-template.md` file using the Read tool, then Write its contents to `CLAUDE.md` in the wiki root.
 
-### 6. 완료 보고
+### 6. Report completion
 
-사용자에게 생성된 구조를 보여준다:
+Show the user the created structure:
 
 ```
 wiki/
@@ -62,5 +62,5 @@ wiki/
 └── CLAUDE.md
 ```
 
-Obsidian에서 `wiki/` 폴더를 Vault로 열면 바로 사용할 수 있다고 안내한다.
-Obsidian Settings → Files and links → Attachment folder path를 `raw/assets/`로 설정하라고 안내한다.
+Inform the user that they can open the `wiki/` folder as a Vault in Obsidian to start using it immediately.
+Instruct the user to set Obsidian Settings → Files and links → Attachment folder path to `raw/assets/`.

@@ -1,85 +1,85 @@
 # Wiki Lint
 
-위키 건강 상태를 점검한다.
+Checks the health status of the wiki.
 
-## 사전 조건
+## Prerequisites
 
-- 위키가 초기화되어 있어야 한다 (`index.md` 존재 확인).
-- `pages/` 디렉토리에 페이지가 1개 이상 있어야 한다. 없으면 "위키에 아직 페이지가 없습니다"라고 안내.
+- The wiki must be initialized (`index.md` must exist).
+- There must be at least 1 page in the `pages/` directory. If none exist, inform the user: "There are no pages in the wiki yet."
 
-## 절차
+## Procedure
 
-### 1. 전체 위키 스캔
+### 1. Full Wiki Scan
 
-- `pages/` 디렉토리의 모든 `.md` 파일 목록을 Glob으로 수집한다.
-- 각 페이지를 Read 도구로 읽어 프론트매터와 본문을 파싱한다.
-- `index.md`를 읽는다.
+- Collect a list of all `.md` files in the `pages/` directory using Glob.
+- Read each page with the Read tool to parse the frontmatter and body.
+- Read `index.md`.
 
-### 2. 점검 항목
+### 2. Check Items
 
-다음 항목을 점검하고 결과를 수집한다:
+Check the following items and collect results:
 
-#### 고아 페이지
-- 다른 페이지에서 `[[wikilink]]`로 참조하지 않는 페이지를 찾는다.
-- index.md에서의 참조는 제외 (index는 카탈로그이므로).
+#### Orphan Pages
+- Find pages that are not referenced by any `[[wikilink]]` from other pages.
+- Exclude references from index.md (since index is a catalog).
 
-#### 깨진 링크
-- 본문에서 `[[존재하지 않는 페이지]]`를 참조하는 경우를 찾는다.
-- `pages/` 디렉토리에 해당 파일이 없으면 깨진 링크.
+#### Broken Links
+- Find cases where `[[a non-existent page]]` is referenced in the body.
+- If the corresponding file does not exist in the `pages/` directory, it is a broken link.
 
-#### 프론트매터 점검
-- 필수 필드 (`title`, `tags`, `sources`, `created`, `updated`) 누락 확인.
-- `title`과 파일명 불일치 확인.
+#### Frontmatter Check
+- Confirm missing required fields (`title`, `tags`, `sources`, `created`, `updated`).
+- Confirm mismatches between `title` and filename.
 
-#### 태그 점검
-- 한 번만 사용된 태그 목록 (오타 가능성).
-- index.md의 태그별 목록과 실제 페이지 태그 불일치 확인.
+#### Tag Check
+- List tags used only once (possible typos).
+- Confirm mismatches between the per-tag list in index.md and the actual page tags.
 
-#### 내용 점검
-- 같은 주제에 대해 서로 다른 주장을 하는 페이지가 있는지 확인.
-- 여러 페이지에서 반복적으로 언급되지만 자체 페이지가 없는 개념 식별.
+#### Content Check
+- Check whether any pages make conflicting claims about the same topic.
+- Identify concepts repeatedly mentioned across multiple pages but without their own page.
 
-#### index.md 동기화
-- index.md에 있지만 pages/에 없는 항목 (삭제된 페이지).
-- pages/에 있지만 index.md에 없는 항목 (누락된 등록).
+#### index.md Sync
+- Items in index.md but not in pages/ (deleted pages).
+- Items in pages/ but not in index.md (missing registrations).
 
-### 3. 보고
+### 3. Report
 
-점검 결과를 카테고리별로 정리하여 보고한다:
+Organize and report the check results by category:
 
 ````markdown
-## 위키 린트 결과
+## Wiki Lint Results
 
-### 고아 페이지 (N건)
-- [[페이지명]] — 인바운드 링크 없음
+### Orphan Pages (N items)
+- [[page-name]] — no inbound links
 
-### 깨진 링크 (N건)
-- [[존재하지 않는 페이지]] ← [[참조하는 페이지]]
+### Broken Links (N items)
+- [[non-existent page]] ← [[referencing page]]
 
-### 프론트매터 문제 (N건)
-- [[페이지명]] — `tags` 필드 누락
+### Frontmatter Issues (N items)
+- [[page-name]] — `tags` field missing
 
-### 태그 문제 (N건)
-- `오타태그` — 1회 사용 (의도한 태그인지 확인 필요)
+### Tag Issues (N items)
+- `typo-tag` — used 1 time (verify if intentional)
 
-### 내용 문제 (N건)
-- 모순: [[페이지A]]에서는 X라고 하지만 [[페이지B]]에서는 Y라고 함
-- 페이지 제안: "개념Z"가 3개 페이지에서 언급되지만 자체 페이지 없음
+### Content Issues (N items)
+- Contradiction: [[PageA]] says X but [[PageB]] says Y
+- Page suggestion: "ConceptZ" is mentioned in 3 pages but has no page of its own
 
-### index.md 동기화 (N건)
-- pages/에 있지만 index에 없음: [[페이지명]]
+### index.md Sync (N items)
+- In pages/ but not in index: [[page-name]]
 ````
 
-### 4. 수정 제안
+### 4. Fix Suggestions
 
-각 문제에 대해 구체적인 수정 제안을 한다. 사용자에게 일괄 적용할지 항목별로 적용할지 묻는다.
+Provide specific fix suggestions for each issue. Ask the user whether to apply all at once or item by item.
 
-사용자가 승인한 수정사항을 적용한 후 `log.md`에 기록:
+After applying fixes approved by the user, record them in `log.md`:
 
 ````markdown
 ## [YYYY-MM-DD] lint
-- 고아 페이지: N건 해결
-- 깨진 링크: N건 해결
-- 프론트매터 수정: N건
-- index 동기화: N건
+- Orphan pages: N resolved
+- Broken links: N resolved
+- Frontmatter fixes: N
+- Index sync: N
 ````
