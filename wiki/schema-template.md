@@ -1,18 +1,18 @@
 # Wiki Schema
 
-This directory is an LLM-managed personal wiki. The LLM writes and maintains all wiki pages. The user focuses on source curation, navigation, and asking questions.
+This is an LLM-maintained personal wiki. The LLM owns all wiki pages — creating, updating, and cross-referencing them as new sources arrive. The human curates sources, explores, and asks questions.
 
-## Directory Structure
+## Structure
 
-- `raw/` — Original sources. Immutable. The LLM only reads from here.
-  - `assets/` — Image files
-- `pages/` — Wiki pages owned by the LLM. Flat structure.
-- `index.md` — Full wiki catalog.
-- `log.md` — Chronological activity log.
+- `raw/` — Source material. Immutable; the LLM never writes here.
+  - `assets/` — Images
+- `pages/` — Wiki pages. Flat directory, no subfolders.
+- `index.md` — Page catalog with tag groupings and a master table.
+- `log.md` — Append-only activity log (newest first).
 
-## Page Format
+## Page format
 
-All wiki pages (`pages/*.md`) follow this format:
+Every page in `pages/` uses this template:
 
 ```yaml
 ---
@@ -24,19 +24,18 @@ updated: YYYY-MM-DD
 ---
 ```
 
-- **title**: Matches the filename.
-- **tags**: Free-form. Used for post-hoc categorization.
-- **sources**: List of original source paths that contributed to this page.
-- **created**: Date first created.
-- **updated**: Date last modified.
+- **title** — Must match the filename.
+- **tags** — Free-form, for ad-hoc categorization.
+- **sources** — Which raw sources contributed to this page.
+- **created / updated** — Only bump `updated` on edits.
 
-## Link Conventions
+## Links
 
-- References between wiki pages use the `[[page-name]]` format (Obsidian wikilink).
-- Key connections are listed in a `## Related Pages` section at the bottom of each page.
-- Use `[[wikilink]]` inline in body text when mentioning related concepts.
+- Use `[[page-name]]` (Obsidian wikilinks) for all inter-page references.
+- End each page with a `## Related Pages` section listing key connections.
+- Link inline whenever mentioning a concept that has its own page.
 
-## index.md Format
+## index.md format
 
 ```markdown
 # Wiki Index
@@ -47,30 +46,30 @@ updated: YYYY-MM-DD
 
 ## All Pages
 | Page | Tags | Sources | Last Modified |
-|--------|------|---------|-----------|
+|------|------|---------|---------------|
 | [[page-name]] | tag1, tag2 | N | YYYY-MM-DD |
 ```
 
-## log.md Format
+## log.md format
 
-Latest entry at the top (prepend). Each entry uses the format `## [YYYY-MM-DD] operation | title`.
+Newest first (prepend). Each entry: `## [YYYY-MM-DD] operation | title`.
 
 ```markdown
 # Wiki Log
 
 ## [YYYY-MM-DD] ingest | Source Title
 - source: raw/filename.md
-- created: [[new page]]
-- updated: [[existing page]]
-- summary: one-line summary of key content
+- created: [[new-page]]
+- updated: [[existing-page]]
+- summary: one-line key takeaway
 ```
 
-## Rules
+## Ground rules
 
-1. Never modify files in the `raw/` directory.
-2. Only create, modify, or delete files in the `pages/` directory.
-3. Update `index.md` every time a page is created or modified.
-4. Log all activity in `log.md`.
-5. If new information relates to an existing page, update that page as well.
-6. If new information contradicts existing content, state both explicitly and indicate which source each piece of information comes from.
-7. Actively add cross-references between pages.
+1. Never touch anything in `raw/`.
+2. Only create, edit, or delete files in `pages/`.
+3. Update `index.md` whenever a page changes.
+4. Log every operation in `log.md`.
+5. When new information relates to existing pages, update them too.
+6. When new information contradicts existing content, keep both and cite sources.
+7. Cross-reference aggressively.

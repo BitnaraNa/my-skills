@@ -1,113 +1,109 @@
-# Wiki Ingest
+# Ingest
 
-Read a source and integrate it into the wiki.
+Process a source into wiki pages.
 
 ## Arguments
 
-- File path (e.g. `raw/article.md`) → single ingest
-- Directory path (e.g. `raw/`) → batch ingest
-- No argument → batch ingest using `raw/` directory as default
+- **File path** (e.g. `raw/article.md`) — single-file ingest
+- **Directory path** (e.g. `raw/`) — batch ingest all un-ingested files
+- **No argument** — defaults to batch ingest on `raw/`
 
 ## Prerequisites
 
-- The wiki must be initialized (check for `index.md`). If missing, prompt the user to run `/wiki init` first.
-- The target source file must exist in the `raw/` directory.
+- Wiki must be initialized (`index.md` must exist). If not, tell the user to run `/wiki init`.
+- Source files must live under `raw/`.
 
-## Single Ingest
+---
 
-When a file path is given, process it directly in the current session.
+## Single-file ingest
 
-### 1. Read Source
+Process one source in the current session.
 
-- Read the source file using the Read tool.
-- If the source contains image references (`![[image.png]]`, `![](path)`), also inspect the images using the Read tool.
+### 1. Read the source
 
-### 2. Share Key Content
+Read the file. If it references images (`![[img.png]]` or `![](path)`), inspect those too.
 
-Summarize the key content of the source in 3-5 lines and share it with the user. Ask if there is anything the user would like to emphasize.
+### 2. Discuss with the user
 
-### 3. Create/Update Wiki Pages
+Share a 3-5 line summary of what's in the source. Ask if there's anything they want to emphasize or deprioritize.
 
-- Read `index.md` to identify the existing wiki page list.
-- Identify the main concepts, entities, and insights from this source.
-- For each one:
-  - If a matching page exists: Read that page → integrate the new information via Edit. Add this source to the `sources` frontmatter. Update the `updated` date.
-  - If no matching page exists: Write a new page in `pages/`. Follow the frontmatter format defined in CLAUDE.md (wiki schema).
-- Add relevant `[[wikilink]]` cross-references to all pages.
-- If new information contradicts existing content, state both and cite the sources.
+### 3. Create or update pages
+
+- Read `index.md` to see what pages already exist.
+- Identify the key concepts, entities, and insights in the source.
+- For each:
+  - **Existing page** — Read it, integrate the new information, add this source to `sources`, bump `updated`.
+  - **New topic** — Create a page in `pages/` following the format in CLAUDE.md.
+- Add `[[wikilink]]` cross-references across all affected pages.
+- If the new information contradicts something already in the wiki, keep both claims and cite sources.
 
 ### 4. Update index.md
 
-- Reflect new/updated pages in the per-tag list section.
-- Reflect new/updated pages in the full page table.
-- Update the source count and last-modified date for existing entries.
+Reflect all new and modified pages in both the tag list and the master table.
 
-### 5. Write to log.md
+### 5. Log it
 
-Prepend to the top of `log.md` (immediately after the `# Wiki Log` header) using the following format:
+Prepend to `log.md` (right after the `# Wiki Log` header):
 
 ```markdown
-## [YYYY-MM-DD] ingest | source title
+## [YYYY-MM-DD] ingest | Source Title
 - source: raw/filename.md
-- created: [[new page 1]], [[new page 2]]
-- updated: [[existing page 1]]
-- summary: one-line summary of key content
+- created: [[new-page-1]], [[new-page-2]]
+- updated: [[existing-page]]
+- summary: one-line key takeaway
 ```
 
-### 6. Completion Report
+### 6. Report
 
-Report a summary of created/updated pages and the key content added to each page.
+Summarize what was created/updated and the key information added.
 
-## Batch Ingest
+---
 
-When a directory path is given, run sub-agents sequentially per file.
+## Batch ingest
 
-### 1. Collect List of Un-ingested Files
+Process multiple sources, one sub-agent per file.
 
-- Read `log.md` to extract the list of already-ingested source paths (parse paths from `- source:` lines).
-- Collect the list of `.md` files in the target directory using Glob.
-- Finalize the list of un-ingested files by excluding already-ingested ones.
+### 1. Find un-ingested files
 
-### 2. If No Un-ingested Files Exist
+- Parse `log.md` for already-ingested paths (look for `- source:` lines).
+- Glob for `.md` files in the target directory.
+- Subtract to get the un-ingested list.
 
-Inform the user "There are no new sources to ingest" and exit.
+### 2. Nothing to do?
 
-### 3. Run Sub-agents Sequentially Per File
+If the list is empty, say so and stop.
 
-Show the list of un-ingested files to the user and begin processing.
+### 3. Process each file
 
-For each file, run a sub-agent using the Agent tool:
+Show the user the list, then for each file spawn a sub-agent via the Agent tool:
 
-**Agent prompt template:**
+**Prompt template:**
 
 ```
-Perform a wiki ingest. Follow the procedure below.
+Perform a wiki ingest. Follow these steps exactly.
 
-## Wiki Root
-{absolute path to wiki root}
+## Wiki root
+{absolute path}
 
-## Wiki Schema
-Read CLAUDE.md in the wiki root using the Read tool and follow the conventions.
+## Schema
+Read CLAUDE.md at the wiki root and follow its conventions.
 
-## Target Source
+## Source
 {absolute path to source file}
 
-## Procedure
-1. Read the source file using the Read tool.
-2. Read index.md using the Read tool to identify existing wiki pages.
-3. Identify the main concepts, entities, and insights from the source.
-4. For each one: Edit the existing page if it exists, otherwise Write a new page in pages/.
-5. Add [[wikilink]] cross-references to all pages.
-6. Update index.md (per-tag list + full page table).
-7. Prepend the ingest record to the top of log.md.
-8. Report the list of created/updated pages with a summary.
+## Steps
+1. Read the source file.
+2. Read index.md to see existing pages.
+3. Identify key concepts, entities, and insights.
+4. For each: edit existing pages or create new ones in pages/.
+5. Add [[wikilink]] cross-references.
+6. Update index.md (tag list + master table).
+7. Prepend an ingest entry to log.md.
+8. Report what you created/updated with a brief summary.
 ```
 
-After each agent completes, proceed to the next file (sequential execution — prevents conflicts in index.md and log.md).
+Wait for each agent to finish before starting the next (sequential — avoids write conflicts on index.md and log.md).
 
-### 4. Final Completion Report
+### 4. Summary
 
-After all files are processed, report an overall summary:
-- Number of sources processed
-- Number of pages created
-- Number of pages updated
+After all files are processed, report totals: sources processed, pages created, pages updated.

@@ -1,54 +1,51 @@
-# Wiki Query
+# Query
 
-Search the wiki and synthesize an answer.
+Answer a question using the wiki.
 
 ## Arguments
 
-- Question text (e.g. `What is the difference between LLM wiki and RAG?`)
+The question text (e.g. `How does X relate to Y?`).
 
 ## Prerequisites
 
-- The wiki must be initialized (verify that `index.md` exists).
+Wiki must be initialized (`index.md` must exist).
 
-## Procedure
+## Steps
 
-### 1. Read index.md
+### 1. Scan the index
 
-Use the Read tool to read `index.md` and understand the full list of wiki pages and their tags.
+Read `index.md` to get an overview of all pages and their tags.
 
-### 2. Identify Relevant Pages
+### 2. Find relevant pages
 
-Identify pages related to the question based on the descriptions and tags in index.md. If needed, use the Grep tool to search for keywords in the `pages/` directory.
+Match the question against page descriptions and tags. If the index isn't enough, Grep for keywords in `pages/`.
 
-### 3. Read Relevant Pages
+### 3. Read the pages
 
-Use the Read tool to read the identified relevant pages.
+Read the relevant pages in full.
 
-### 4. Synthesize the Answer
+### 4. Synthesize
 
-- Compile the content from the read pages to compose an answer.
-- Cite the source pages in the answer using the `[[page name]]` format.
-- When synthesizing information from multiple pages, specify which information came from which page.
-- If there are contradictions between pages, present both sides.
+- Compose an answer drawing on the pages you read.
+- Cite sources as `[[page-name]]`.
+- When combining information from multiple pages, make clear what came from where.
+- If pages disagree, present both sides.
 
-### 5. Propose Wiki Inclusion
+### 5. Offer to save
 
-If the answer satisfies any of the following conditions, propose to the user whether to add it to the wiki:
-- A new analysis or comparison synthesizing multiple pages
-- A perspective or connection that did not previously exist
-- Content likely to be referenced repeatedly
+If the answer represents a meaningful synthesis — combining multiple pages, surfacing a new connection, or producing something worth referencing again — ask:
 
-Proposal format: "Would you like to save this analysis as a wiki page?"
+> "Want me to save this as a wiki page?"
 
-### 6. Wiki Inclusion (upon user approval)
+### 6. Save (if approved)
 
-- Write the new page to `pages/`. Include the original sources of referenced wiki pages in the frontmatter `sources` field.
-- Add a `[[wikilink]]` to the new page in related pages.
+- Write a new page in `pages/`. Set `sources` in the frontmatter to the original raw sources of the pages you drew from.
+- Add `[[wikilink]]` references from related pages to the new one.
 - Update `index.md`.
-- Prepend the query record to `log.md`:
+- Prepend to `log.md`:
 
 ```markdown
-## [YYYY-MM-DD] query | question content
-- One-line summary of the answer
-- Created: [[new page name]]
+## [YYYY-MM-DD] query | The question asked
+- answer: one-line summary
+- created: [[new-page-name]]
 ```

@@ -1,38 +1,38 @@
 ---
 name: wiki
-description: LLM-managed personal wiki. Ingest sources, query the wiki, and check health status. Subcommands: init, ingest, query, lint.
+description: Personal wiki maintained by the LLM. Subcommands: init, ingest, query, lint.
 ---
 
 # Wiki
 
-A personal wiki system written and maintained by an LLM. Uses Obsidian as the viewer.
+A personal knowledge base that the LLM builds and maintains. You curate sources and ask questions; the LLM handles everything else — summarizing, cross-referencing, filing, and keeping the wiki consistent. Designed for use with Obsidian.
 
-## Usage
+## Commands
 
-- `/wiki init` — Create the initial wiki structure
-- `/wiki ingest <file|directory>` — Integrate sources into the wiki
-- `/wiki query <question>` — Search the wiki and synthesize an answer
-- `/wiki lint` — Check wiki health status
+- `/wiki init` — Scaffold the wiki directory structure
+- `/wiki ingest <file|directory>` — Process sources into wiki pages
+- `/wiki query <question>` — Answer questions using the wiki
+- `/wiki lint` — Audit the wiki for issues
 
-## Subcommand Parsing
+## Routing
 
-Parse the first word from ARGUMENTS as the subcommand. The remainder are arguments for that operation.
+The first word of ARGUMENTS determines the subcommand. The rest is passed as arguments.
 
-| First word | File to read | Arguments |
-|------------|--------------|-----------|
-| `init` | `ops/init.md` | None |
-| `ingest` | `ops/ingest.md` | Everything remaining (file or directory path) |
-| `query` | `ops/query.md` | Everything remaining (question text) |
-| `lint` | `ops/lint.md` | None |
+| Subcommand | Reads | Arguments |
+|------------|-------|-----------|
+| `init` | `ops/init.md` | — |
+| `ingest` | `ops/ingest.md` | File or directory path |
+| `query` | `ops/query.md` | Question text |
+| `lint` | `ops/lint.md` | — |
 
-If no subcommand is provided or it is unrecognized, display the usage above.
+If no subcommand is given (or it's unrecognized), show the commands above.
 
-## Execution
+## How it works
 
-1. Parse the subcommand.
-2. Read the corresponding `ops/*.md` file using the Read tool.
-3. Follow the instructions in the file exactly. Pass along any arguments if present.
+1. Parse the subcommand from ARGUMENTS.
+2. Read the corresponding `ops/*.md` file.
+3. Follow its instructions exactly, passing along any remaining arguments.
 
-## Wiki Location
+## Wiki root
 
-The wiki root is the `wiki/` directory within the current working directory. If the current directory is `wiki/` itself, use the current directory as the wiki root.
+The wiki lives at `wiki/` relative to the current working directory. If the cwd is already `wiki/`, use it directly.

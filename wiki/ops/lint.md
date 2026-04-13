@@ -1,85 +1,79 @@
-# Wiki Lint
+# Lint
 
-Checks the health status of the wiki.
+Audit the wiki for structural and content issues.
 
 ## Prerequisites
 
-- The wiki must be initialized (`index.md` must exist).
-- There must be at least 1 page in the `pages/` directory. If none exist, inform the user: "There are no pages in the wiki yet."
+- Wiki must be initialized (`index.md` must exist).
+- At least one page must exist in `pages/`. If empty, say so and stop.
 
-## Procedure
+## Steps
 
-### 1. Full Wiki Scan
+### 1. Scan everything
 
-- Collect a list of all `.md` files in the `pages/` directory using Glob.
-- Read each page with the Read tool to parse the frontmatter and body.
+- Glob all `.md` files in `pages/`.
+- Read each page (frontmatter + body).
 - Read `index.md`.
 
-### 2. Check Items
+### 2. Check for issues
 
-Check the following items and collect results:
+#### Orphan pages
+Pages with no inbound `[[wikilink]]` from other pages (index.md references don't count — it's a catalog, not a real link).
 
-#### Orphan Pages
-- Find pages that are not referenced by any `[[wikilink]]` from other pages.
-- Exclude references from index.md (since index is a catalog).
+#### Broken links
+`[[wikilinks]]` pointing to pages that don't exist in `pages/`.
 
-#### Broken Links
-- Find cases where `[[a non-existent page]]` is referenced in the body.
-- If the corresponding file does not exist in the `pages/` directory, it is a broken link.
+#### Frontmatter problems
+- Missing required fields: `title`, `tags`, `sources`, `created`, `updated`.
+- `title` doesn't match filename.
 
-#### Frontmatter Check
-- Confirm missing required fields (`title`, `tags`, `sources`, `created`, `updated`).
-- Confirm mismatches between `title` and filename.
+#### Tag hygiene
+- Tags used only once (possible typos).
+- Tags in index.md that don't match actual page tags.
 
-#### Tag Check
-- List tags used only once (possible typos).
-- Confirm mismatches between the per-tag list in index.md and the actual page tags.
+#### Content issues
+- Pages making conflicting claims about the same topic.
+- Concepts mentioned repeatedly across pages but without their own page.
 
-#### Content Check
-- Check whether any pages make conflicting claims about the same topic.
-- Identify concepts repeatedly mentioned across multiple pages but without their own page.
-
-#### index.md Sync
-- Items in index.md but not in pages/ (deleted pages).
-- Items in pages/ but not in index.md (missing registrations).
+#### Index out of sync
+- Pages listed in index.md but missing from `pages/`.
+- Pages in `pages/` but not listed in index.md.
 
 ### 3. Report
 
-Organize and report the check results by category:
-
 ````markdown
-## Wiki Lint Results
+## Lint Report
 
-### Orphan Pages (N items)
-- [[page-name]] — no inbound links
+### Orphan Pages (N)
+- [[page]] — no inbound links
 
-### Broken Links (N items)
-- [[non-existent page]] ← [[referencing page]]
+### Broken Links (N)
+- [[missing-page]] <- [[linking-page]]
 
-### Frontmatter Issues (N items)
-- [[page-name]] — `tags` field missing
+### Frontmatter (N)
+- [[page]] — missing `tags`
 
-### Tag Issues (N items)
-- `typo-tag` — used 1 time (verify if intentional)
+### Tags (N)
+- `possible-typo` — used once, verify intent
 
-### Content Issues (N items)
-- Contradiction: [[PageA]] says X but [[PageB]] says Y
-- Page suggestion: "ConceptZ" is mentioned in 3 pages but has no page of its own
+### Content (N)
+- Conflict: [[page-a]] says X, [[page-b]] says Y
+- Suggested page: "concept-z" appears in 3 pages but has no page
 
-### index.md Sync (N items)
-- In pages/ but not in index: [[page-name]]
+### Index Sync (N)
+- In pages/ but not in index: [[page]]
 ````
 
-### 4. Fix Suggestions
+### 4. Fix
 
-Provide specific fix suggestions for each issue. Ask the user whether to apply all at once or item by item.
+Offer specific fixes for each issue. Ask whether to apply them all at once or one by one.
 
-After applying fixes approved by the user, record them in `log.md`:
+After applying approved fixes, log it:
 
 ````markdown
 ## [YYYY-MM-DD] lint
-- Orphan pages: N resolved
-- Broken links: N resolved
-- Frontmatter fixes: N
-- Index sync: N
+- orphan pages: N resolved
+- broken links: N resolved
+- frontmatter: N fixed
+- index sync: N fixed
 ````
