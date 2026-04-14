@@ -34,10 +34,7 @@ This is an objective summary. Do not inject opinions, insights, or interpretatio
 
 ### 3. Update index.md
 
-Add the new Reference to:
-- The "By Tag" section under each relevant tag.
-- The "By Type" section under References.
-- The "All Documents" table.
+Add a new row to the `index.md` table.
 
 ### 4. Log it
 

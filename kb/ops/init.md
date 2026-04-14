@@ -31,15 +31,6 @@ pages/
 ```markdown
 # KB Index
 
-## By Tag
-
-(No documents yet)
-
-## By Type
-
-(No documents yet)
-
-## All Documents
 | Document | Type | Tags | Status | Last Modified |
 |----------|------|------|--------|---------------|
 ```

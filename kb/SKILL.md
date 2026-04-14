@@ -1,6 +1,6 @@
 ---
 name: kb
-description: LLM-managed knowledge base. Subcommands: init, process, discuss, capture, query, lint, consolidate, log.
+description: LLM-managed knowledge base. Subcommands: init, process, discuss, capture, query, lint, consolidate, log, collect.
 ---
 
 # KB
@@ -13,7 +13,7 @@ Three layers:
 - **pages/** — Synthesized pages for you to read. The LLM generates these from _internal/.
 
 Core workflow:
-1. Drop sources into `inbox/`
+1. `/kb collect x` or `/kb collect reddit` — Auto-collect likes into `inbox/`
 2. `/kb process` — LLM creates objective reference summaries
 3. `/kb discuss` — You explore the material in conversation, capture your own insights and hypotheses
 4. `/kb capture` — Record a standalone thought anytime
@@ -21,6 +21,7 @@ Core workflow:
 
 ## Commands
 
+- `/kb collect [x|reddit]` — Auto-collect liked posts into inbox/ via Playwright
 - `/kb init` — Scaffold the KB directory structure
 - `/kb process [file|dir]` — Process inbox files into reference summaries
 - `/kb discuss [ref]` — Explore a reference in conversation; capture insights and hypotheses
@@ -36,6 +37,7 @@ The first word of ARGUMENTS determines the subcommand. The rest is passed as arg
 
 | Subcommand | Reads | Arguments |
 |------------|-------|-----------|
+| `collect` | `ops/collect.md` | Source: `x` or `reddit` |
 | `init` | `ops/init.md` | — |
 | `process` | `ops/process.md` | File or directory path (optional) |
 | `discuss` | `ops/discuss.md` | Document name (optional) |

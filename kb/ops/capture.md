@@ -55,10 +55,7 @@ Read `index.md` to find existing documents related to this thought. If found, as
 
 ### 5. Update index.md
 
-Add the new document to:
-- The "By Tag" section under each relevant tag.
-- The "By Type" section under the document type.
-- The "All Documents" table.
+Add a new row to the `index.md` table.
 
 ### 6. Log it
 
