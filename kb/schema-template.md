@@ -1,0 +1,258 @@
+# KB Schema
+
+This is a personal knowledge base. The LLM manages organization and reference summaries. The human owns all interpretive content — insights, hypotheses, experiments, results, and retrospectives are created only through conversation with the user, never auto-generated.
+
+## Structure
+
+- `inbox/` — Raw source material. Immutable; the LLM never writes here.
+- `_internal/` — Structured documents, organized by type:
+  - `references/` — Source summaries
+  - `insights/` — Extracted patterns and findings
+  - `hypotheses/` — Testable predictions
+  - `experiments/` — Execution plans for hypotheses
+  - `results/` — Experiment outcomes
+  - `retrospectives/` — Post-result reflection
+  - `notes/` — Free-form memos
+- `pages/` — Synthesized user-facing pages. Generated from `_internal/`.
+- `index.md` — Document catalog with tag groupings, type groupings, and a master table.
+- `log.md` — Append-only activity log (newest first).
+
+## Document types and frontmatter
+
+Every document in `_internal/` uses YAML frontmatter. Common fields:
+
+```yaml
+---
+title: Document Title
+type: reference|insight|hypothesis|experiment|result|retrospective|note
+tags: [tag1, tag2]
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+### Reference
+
+```yaml
+---
+title: Source Title
+type: reference
+tags: []
+source_path: inbox/filename.md
+source_url: https://... # optional
+source_type: article|paper|book|video|podcast|other
+leads_to: []
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+### Insight
+
+```yaml
+---
+title: Insight Title
+type: insight
+tags: []
+derived_from: []
+leads_to: []
+confidence: high|medium|low
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+### Hypothesis
+
+```yaml
+---
+title: Hypothesis Title
+type: hypothesis
+tags: []
+derived_from: []
+leads_to: []
+status: proposed|testing|confirmed|rejected|revised
+expected_outcome: "description"
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+### Experiment
+
+```yaml
+---
+title: Experiment Title
+type: experiment
+tags: []
+hypothesis: []
+status: planned|in-progress|done|abandoned
+method: "description"
+success_criteria: "description"
+due_date: YYYY-MM-DD # optional
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+### Result
+
+```yaml
+---
+title: Result Title
+type: result
+tags: []
+experiment: []
+outcome: "description"
+verdict: confirmed|rejected|partial|inconclusive
+leads_to: []
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+### Retrospective
+
+```yaml
+---
+title: Retrospective Title
+type: retrospective
+tags: []
+result: []
+what_worked: "description"
+what_didnt: "description"
+what_learned: "description"
+next_actions: []
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+### Note
+
+```yaml
+---
+title: Note Title
+type: note
+tags: []
+related: []
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+## Provenance chain
+
+Documents link to each other directionally:
+
+```
+Reference →leads_to→ Insight →leads_to→ Hypothesis
+    ↑ derived_from        ↑ derived_from
+                          Experiment →hypothesis→ (back)
+                              Result →experiment→ (back)
+                          Retrospective →result→ (back)
+                                  →leads_to→ new Insight/Hypothesis (loop)
+```
+
+## Links
+
+- Use `[[document-name]]` (Obsidian wikilinks) for all inter-document references.
+- End each document with a `## Related` section listing key connections.
+- Link inline whenever mentioning a concept that has its own document.
+
+## index.md format
+
+```markdown
+# KB Index
+
+## By Tag
+### tag-name
+- [[document-name]] — one-line description (type: insight)
+
+## By Type
+### References
+- [[ref-name]] — one-line description
+
+### Insights
+- [[insight-name]] — one-line description
+
+### Hypotheses
+- [[hyp-name]] — one-line description (status: proposed)
+
+### Experiments
+- [[exp-name]] — one-line description (status: planned)
+
+### Results
+- [[res-name]] — one-line description (verdict: confirmed)
+
+### Retrospectives
+- [[retro-name]] — one-line description
+
+### Notes
+- [[note-name]] — one-line description
+
+## All Documents
+| Document | Type | Tags | Status | Last Modified |
+|----------|------|------|--------|---------------|
+| [[name]] | insight | tag1, tag2 | — | YYYY-MM-DD |
+```
+
+## log.md format
+
+Newest first (prepend after the `# KB Log` header). Each entry: `## [YYYY-MM-DD] operation | title`.
+
+```markdown
+# KB Log
+
+## [YYYY-MM-DD] process | Source Title
+- source: inbox/filename.md
+- created: [[ref-name]], [[insight-name]]
+- updated: [[existing-page]]
+- summary: one-line key takeaway
+
+## [YYYY-MM-DD] hypothesis-update | Hypothesis Title
+- status: proposed → rejected
+- reason: one-line
+- retro: [[retro-name]]
+
+## [YYYY-MM-DD] discuss | Reference Title
+- reference: [[ref-name]]
+- captured: [[insight-1]], [[hypothesis-1]]
+- summary: one-line description of what was explored
+
+## [YYYY-MM-DD] capture | Document Title
+- type: insight
+- created: [[doc-name]]
+- related: [[linked-doc]]
+
+## [YYYY-MM-DD] consolidate | Topic Name
+- synthesized: [[page-name]]
+- from: [[doc1]], [[doc2]], [[doc3]]
+
+## [YYYY-MM-DD] lint
+- orphans: N resolved
+- broken links: N resolved
+- inbox backlog: N flagged
+```
+
+## 2-stage reading pattern
+
+All operations that search `_internal/` use this pattern:
+1. Read `index.md` (lightweight — one-line summaries). Filter to find relevant documents.
+2. Read only the filtered documents in full.
+
+This keeps operations fast even with hundreds of documents.
+
+## Ground rules
+
+1. Never modify anything in `inbox/`.
+2. Structured documents go in `_internal/` subdirectories by type.
+3. Synthesized user-facing pages go in `pages/`.
+4. Update `index.md` whenever a document changes.
+5. Log every operation in `log.md`.
+6. When new information relates to existing documents, update them.
+7. When new information contradicts existing content, keep both and cite sources.
+8. Cross-reference aggressively via wikilinks.
+9. **Only `reference` documents may be created automatically.** All other types (insight, hypothesis, experiment, result, retrospective, note) must come from the user's own thinking, captured through `/kb discuss` or `/kb capture`.
+10. Never rewrite the user's words when capturing their thoughts. Use their language.
+11. Hypothesis status changes require user confirmation.
